@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1f6f5c">
+<title>Entrenador de Estudio</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+:root {
+  --bg: #f4f6f5; --card: #ffffff; --text: #1d2523; --muted: #5d6a66; --line: #dde3e1;
+  --accent: #1f6f5c; --accent-soft: #e2f0eb; --ok: #1e7b45; --ok-soft: #e3f4ea;
+  --bad: #b3261e; --bad-soft: #fbe7e5; --radius: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #121715; --card: #1b2220; --text: #e6ece9; --muted: #9aa8a3; --line: #2c3633;
+    --accent: #5cc3a6; --accent-soft: #1f3530; --ok: #6fd39a; --ok-soft: #1b3326;
+    --bad: #ff8a80; --bad-soft: #3a1f1d; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-text-size-adjust: 100%; }
+main { max-width: 640px; margin: 0 auto; padding: 16px 16px calc(32px + env(safe-area-inset-bottom)); }
+h1 { font-size: 1.25rem; margin: 0; }
+h2 { font-size: 1.15rem; line-height: 1.4; margin: 6px 0 14px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
+.muted { color: var(--muted); font-size: .9rem; }
+.hidden { display: none !important; }
+button, select, input { font: inherit; color: inherit; }
+.btn { display: block; width: 100%; padding: 13px 16px; border-radius: 12px; border: 0;
+  background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; }
+@media (prefers-color-scheme: dark) { .btn { color: #0f1513; } }
+.btn.secundario { background: var(--accent-soft); color: var(--accent); }
+.btn:disabled { opacity: .5; }
+header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+header select { max-width: 55%; }
+select, input[type=password], input[type=number] { width: 100%; padding: 11px 12px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--card); }
+.tabs, .seg { display: flex; gap: 6px; background: var(--accent-soft); padding: 4px; border-radius: 12px; margin-bottom: 14px; }
+.tabs button, .seg button { flex: 1; border: 0; background: transparent; padding: 9px 6px; border-radius: 9px;
+  color: var(--accent); font-weight: 600; font-size: .92rem; cursor: pointer; }
+.tabs button.on, .seg button.on { background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.opcion { display: block; width: 100%; text-align: left; padding: 13px 14px; margin-bottom: 10px; cursor: pointer;
+  border: 1.5px solid var(--line); border-radius: 12px; background: var(--card); line-height: 1.4; }
+.opcion b { color: var(--accent); margin-right: 6px; }
+.opcion.ok { border-color: var(--ok); background: var(--ok-soft); }
+.opcion.mal { border-color: var(--bad); background: var(--bad-soft); }
+.opcion:disabled { cursor: default; }
+.aviso { padding: 12px 14px; border-radius: 12px; margin: 4px 0 12px; }
+.aviso.ok { background: var(--ok-soft); color: var(--ok); }
+.aviso.mal { background: var(--bad-soft); color: var(--bad); }
+.explica { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
+.barra { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 14px; }
+.barra > div { height: 100%; background: var(--accent); width: 0; transition: width .3s; }
+.lista { max-height: 210px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; padding: 4px 10px; margin-bottom: 12px; }
+.lista label { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: .93rem; }
+.lista label:last-child { border-bottom: 0; }
+.lista input { margin-top: 4px; width: 18px; height: 18px; flex: none; accent-color: var(--accent); }
+.fila { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.fila input { width: 90px; text-align: center; }
+.metricas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+.metricas div { background: var(--accent-soft); border-radius: 12px; padding: 10px; text-align: center; }
+.metricas strong { display: block; font-size: 1.35rem; color: var(--accent); }
+.caja { display: grid; grid-template-columns: 64px 1fr 36px; gap: 8px; align-items: center; font-size: .9rem; margin-bottom: 6px; }
+.caja .barra { margin: 0; }
+#candado { min-height: 80vh; display: flex; flex-direction: column; justify-content: center; }
+#candado .btn { margin-top: 12px; }
+.check { display: flex; gap: 8px; align-items: center; margin-top: 12px; font-size: .92rem; color: var(--muted); }
+.error { color: var(--bad); margin-top: 10px; font-size: .92rem; }
+label.titulo { display: block; font-weight: 600; margin: 4px 0 6px; }
+</style>
+</head>
+<body>
+<main>
+  <!-- Pantalla de contraseña -->
+  <section id="candado">
+    <div class="card">
+      <h1>🔒 Entrenador de Estudio</h1>
+      <p class="muted">Contenido privado. Ingresa la contraseña.</p>
+      <input id="clave" type="password" autocomplete="current-password" placeholder="Contraseña">
+      <label class="check"><input id="recordar" type="checkbox" checked> Recordar en este dispositivo</label>
+      <button class="btn" id="entrar">Entrar</button>
+      <div class="error hidden" id="errorClave">Contraseña incorrecta.</div>
+    </div>
+  </section>
+
+  <!-- Aplicación -->
+  <section id="app" class="hidden">
+    <header>
+      <h1>🧠 Estudio</h1>
+      <select id="materia" aria-label="Materia"></select>
+    </header>
+    <nav class="tabs">
+      <button data-tab="practica" class="on">✏️ Práctica</button>
+      <button data-tab="progreso">📈 Progreso</button>
+    </nav>
+
+    <div id="tab-practica">
+      <div class="seg" id="modos">
+        <button data-modo="repaso" class="on">Repaso del día</button>
+        <button data-modo="aleatorio">Aleatorio</button>
+        <button data-modo="tema">Por tema</button>
+      </div>
+
+      <div id="elegir" class="card hidden">
+        <div id="filtros">
+          <label class="titulo">Documentos</label>
+          <div class="lista" id="listaDocs"></div>
+          <label class="titulo">Temas</label>
+          <div class="lista" id="listaTemas"></div>
+        </div>
+        <div class="fila"><span>¿Cuántas preguntas?</span><input id="cantidad" type="number" min="1" value="20"></div>
+        <button class="btn" id="empezar">Empezar</button>
+      </div>
+
+      <div id="pregunta" class="card hidden">
+        <div class="muted" id="avance"></div>
+        <div class="barra"><div id="barraAvance"></div></div>
+        <div class="muted" id="tema"></div>
+        <h2 id="enunciado"></h2>
+        <div id="opciones"></div>
+        <div id="resultado"></div>
+        <button class="btn hidden" id="siguiente">Siguiente ➡️</button>
+      </div>
+
+      <div id="fin" class="card hidden">
+        <h2 id="finTexto"></h2>
+        <button class="btn secundario" id="extra">Practicar 10 preguntas extra</button>
+      </div>
+    </div>
+
+    <div id="tab-progreso" class="hidden">
+      <div class="card">
+        <div class="metricas">
+          <div><strong id="mTotal">0</strong><span class="muted">Total</span></div>
+          <div><strong id="mVistas">0</strong><span class="muted">Vistas</span></div>
+          <div><strong id="mDominadas">0</strong><span class="muted">Dominadas</span></div>
+        </div>
+        <label class="titulo">Preguntas por caja <span class="muted">(1 = difícil, 5 = dominada)</span></label>
+        <div id="cajas"></div>
+        <p class="muted" id="hoy"></p>
+      </div>
+      <div class="card">
+        <label class="titulo">Las que más te cuestan</label>
+        <div id="dificiles" class="muted">Aún no hay fallos registrados.</div>
+      </div>
+      <div class="card">
+        <label class="titulo">Ajustes del repaso diario</label>
+        <div class="fila"><span>Preguntas por sesión</span><input id="ajMax" type="number" min="5" max="100"></div>
+        <div class="fila"><span>Nuevas por día (máx.)</span><input id="ajNuevas" type="number" min="0" max="50"></div>
+        <button class="btn secundario" id="borrar">Borrar mi progreso de esta materia</button>
+        <p class="muted">El progreso se guarda solo en este dispositivo.</p>
+        <button class="btn secundario" id="salir">Cerrar sesión (olvidar contraseña)</button>
+        <p class="muted" id="version"></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const INTERVALOS = { 1: 1, 2: 2, 3: 4, 4: 8, 5: 16 };   // días hasta el próximo repaso según la caja
+const LETRAS = "ABCDEF";
+
+// ---------- almacenamiento local (tolerante a errores) ----------
+const guardado = {
+  leer(clave, defecto) { try { const v = localStorage.getItem(clave); return v ? JSON.parse(v) : defecto; } catch { return defecto; } },
+  escribir(clave, valor) { try { localStorage.setItem(clave, JSON.stringify(valor)); } catch {} },
+  borrar(clave) { try { localStorage.removeItem(clave); } catch {} },
+};
+
+// ---------- descifrado (AES-GCM + PBKDF2, igual que publicar_web.py) ----------
+const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+async function descifrar(paquete, clave) {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(clave), "PBKDF2", false, ["deriveKey"]);
+  const llave = await crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: b64(paquete.salt), iterations: paquete.iter, hash: "SHA-256" },
+    base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+  const plano = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(paquete.iv) }, llave, b64(paquete.datos));
+  return JSON.parse(new TextDecoder().decode(plano));
+}
+
+let DATOS = null, materia = null, preguntas = [], progreso = null;
+let modo = "repaso", cola = [], falladas = new Set(), hechas = 0, bien = 0;
+
+const hoyISO = () => new Date().toLocaleDateString("en-CA");
+const sumarDias = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return d.toLocaleDateString("en-CA"); };
+const mezclar = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const nombreCorto = (f) => f.replace(/\.pdf$/i, "").replace(/\.pptx$/i, "");
+const escapar = (t) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+async function entrar(clave, recordar) {
+  const paquete = await (await fetch("datos.enc.json", { cache: "no-cache" })).json();
+  DATOS = await descifrar(paquete, clave);
+  if (recordar) guardado.escribir("clave", clave); else guardado.borrar("clave");
+  $("candado").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  $("version").textContent = `Preguntas actualizadas el ${DATOS.generado}.`;
+  const sel = $("materia");
+  sel.innerHTML = Object.keys(DATOS.materias).map((m) => `<option>${escapar(m)}</option>`).join("");
+  const ultima = guardado.leer("materia", null);
+  if (ultima && DATOS.materias[ultima]) sel.value = ultima;
+  cambiarMateria();
+}
+
+$("entrar").onclick = async () => {
+  $("errorClave").classList.add("hidden");
+  try { await entrar($("clave").value, $("recordar").checked); }
+  catch { $("errorClave").classList.remove("hidden"); }
+};
+$("clave").addEventListener("keydown", (e) => { if (e.key === "Enter") $("entrar").click(); });
+
+// ---------- progreso por materia ----------
+function claveProgreso() { return "progreso:" + materia; }
+function estado(id) { return progreso.q[id] || (progreso.q[id] = { caja: 1, proxima: "", aciertos: 0, fallos: 0 }); }
+function guardarProgreso() { guardado.escribir(claveProgreso(), progreso); }
+
+function cambiarMateria() {
+  materia = $("materia").value;
+  guardado.escribir("materia", materia);
+  preguntas = DATOS.materias[materia];
+  progreso = guardado.leer(claveProgreso(), null) || { q: {}, historial: {}, max: 20, nuevas: 10 };
+  $("ajMax").value = progreso.max; $("ajNuevas").value = progreso.nuevas;
+  armarFiltros();
+  elegirModo(modo);
+  pintarProgreso();
+}
+$("materia").onchange = cambiarMateria;
+
+function sesionDelDia() {
+  const hoy = hoyISO();
+  const pendientes = preguntas.filter((q) => { const e = progreso.q[q.id]; return e && e.proxima && e.proxima <= hoy; })
+    .sort((a, b) => estado(a.id).caja - estado(b.id).caja);
+  const nuevas = mezclar(preguntas.filter((q) => !(progreso.q[q.id] && progreso.q[q.id].proxima)));
+  const elegidas = pendientes.slice(0, progreso.max);
+  elegidas.push(...nuevas.slice(0, Math.max(0, Math.min(progreso.nuevas, progreso.max - elegidas.length))));
+  return mezclar(elegidas).map((q) => q.id);
+}
+
+function registrar(id, acerto, primerIntento) {
+  const e = estado(id);
+  if (acerto) { e.aciertos++; e.caja = primerIntento ? Math.min(5, e.caja + 1) : 1; }
+  else { e.fallos++; e.caja = 1; }
+  e.proxima = sumarDias(INTERVALOS[e.caja]);
+  if (primerIntento) {
+    const d = progreso.historial[hoyISO()] || (progreso.historial[hoyISO()] = { respondidas: 0, correctas: 0 });
+    d.respondidas++; d.correctas += acerto ? 1 : 0;
+  }
+  guardarProgreso();
+}
+
+// ---------- modos y filtros ----------
+function elegirModo(m) {
+  modo = m;
+  document.querySelectorAll("#modos button").forEach((b) => b.classList.toggle("on", b.dataset.modo === m));
+  $("filtros").classList.toggle("hidden", m !== "tema");
+  if (m === "repaso") { iniciar(sesionDelDia()); $("elegir").classList.add("hidden"); }
+  else { mostrar("elegir"); $("cantidad").value = 20; actualizarCantidad(); }
+}
+document.querySelectorAll("#modos button").forEach((b) => (b.onclick = () => elegirModo(b.dataset.modo)));
+
+function marcados(id) { return [...document.querySelectorAll(`#${id} input:checked`)].map((i) => i.value); }
+function armarFiltros() {
+  const docs = [...new Set(preguntas.map((q) => q.fuente))].sort();
+  $("listaDocs").innerHTML = docs.map((d) =>
+    `<label><input type="checkbox" value="${escapar(d)}">${escapar(nombreCorto(d))}</label>`).join("");
+  $("listaDocs").onchange = () => { armarTemas(); actualizarCantidad(); };
+  armarTemas();
+}
+function armarTemas() {
+  const docs = marcados("listaDocs");
+  const base = docs.length ? preguntas.filter((q) => docs.includes(q.fuente)) : preguntas;
+  const conteo = {};
+  base.forEach((q) => { if (q.tema) conteo[q.tema] = (conteo[q.tema] || 0) + 1; });
+  $("listaTemas").innerHTML = Object.keys(conteo).sort().map((t) =>
+    `<label><input type="checkbox" value="${escapar(t)}">${escapar(t)} <span class="muted">(${conteo[t]})</span></label>`).join("");
+  $("listaTemas").onchange = actualizarCantidad;
+}
+function candidatas() {
+  if (modo !== "tema") return preguntas;
+  const docs = marcados("listaDocs"), temas = marcados("listaTemas");
+  return preguntas.filter((q) => (!docs.length || docs.includes(q.fuente)) && (!temas.length || temas.includes(q.tema)));
+}
+function actualizarCantidad() {
+  const n = candidatas().length;
+  $("cantidad").max = n;
+  if (+$("cantidad").value > n || +$("cantidad").value < 1) $("cantidad").value = Math.min(20, n);
+  $("empezar").textContent = `Empezar (${n} disponibles)`;
+  $("empezar").disabled = n === 0;
+}
+$("empezar").onclick = () => {
+  const lista = candidatas();
+  const n = Math.max(1, Math.min(lista.length, +$("cantidad").value || 20));
+  iniciar(mezclar(lista).slice(0, n).map((q) => q.id));
+};
+
+// ---------- sesión de preguntas ----------
+function mostrar(id) { ["elegir", "pregunta", "fin"].forEach((s) => $(s).classList.toggle("hidden", s !== id)); }
+
+function iniciar(ids) { cola = ids; falladas = new Set(); hechas = 0; bien = 0; siguiente(); }
+
+function siguiente() {
+  if (!cola.length) return terminar();
+  const q = preguntas.find((p) => p.id === cola[0]);
+  mostrar("pregunta");
+  const total = hechas + cola.length;
+  $("avance").textContent = `Respondidas: ${hechas} · Quedan: ${cola.length}`;
+  $("barraAvance").style.width = `${(100 * hechas) / Math.max(1, total)}%`;
+  $("tema").textContent = `${q.tema ? q.tema + " · " : ""}Caja ${estado(q.id).caja}/5`;
+  $("enunciado").textContent = q.pregunta;
+  $("resultado").innerHTML = "";
+  $("siguiente").classList.add("hidden");
+  $("opciones").innerHTML = q.opciones.map((o, i) =>
+    `<button class="opcion" data-i="${i}"><b>${LETRAS[i]})</b>${escapar(o)}</button>`).join("");
+  document.querySelectorAll(".opcion").forEach((b) => (b.onclick = () => responder(q, +b.dataset.i)));
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function responder(q, i) {
+  const acerto = i === q.correcta, primero = !falladas.has(q.id);
+  registrar(q.id, acerto, primero);
+  if (primero) { hechas++; if (acerto) bien++; }
+  document.querySelectorAll(".opcion").forEach((b) => {
+    b.disabled = true;
+    if (+b.dataset.i === q.correcta) b.classList.add("ok");
+    else if (+b.dataset.i === i) b.classList.add("mal");
+  });
+  $("resultado").innerHTML =
+    (acerto ? `<div class="aviso ok">✅ ¡Correcto!</div>`
+            : `<div class="aviso mal">❌ Incorrecto. Volverá a aparecer al final de esta sesión.</div>`) +
+    `<div class="explica">${escapar(q.explicacion)}</div><p class="muted">Fuente: ${escapar(nombreCorto(q.fuente))}</p>`;
+  if (!acerto) falladas.add(q.id);
+  $("siguiente").dataset.acerto = acerto ? "1" : "";
+  $("siguiente").classList.remove("hidden");
+  pintarProgreso();
+}
+
+$("siguiente").onclick = () => {
+  const actual = cola.shift();
+  if (!$("siguiente").dataset.acerto) cola.push(actual);
+  siguiente();
+};
+
+function terminar() {
+  mostrar("fin");
+  $("finTexto").textContent = hechas
+    ? `🎉 ¡Sesión terminada! ${bien}/${hechas} correctas al primer intento.`
+    : "No tienes repasos pendientes hoy. ¡Vuelve mañana o prueba el modo Aleatorio!";
+  $("extra").classList.toggle("hidden", modo !== "repaso");
+  if (modo !== "repaso") $("elegir").classList.remove("hidden");
+}
+$("extra").onclick = () => {
+  const ids = preguntas.slice().sort((a, b) => estado(a.id).caja - estado(b.id).caja).slice(0, 10).map((q) => q.id);
+  iniciar(mezclar(ids));
+};
+
+// ---------- pestañas y progreso ----------
+document.querySelectorAll(".tabs button").forEach((b) => (b.onclick = () => {
+  document.querySelectorAll(".tabs button").forEach((x) => x.classList.toggle("on", x === b));
+  $("tab-practica").classList.toggle("hidden", b.dataset.tab !== "practica");
+  $("tab-progreso").classList.toggle("hidden", b.dataset.tab !== "progreso");
+  pintarProgreso();
+}));
+
+function pintarProgreso() {
+  const vistas = preguntas.filter((q) => progreso.q[q.id] && progreso.q[q.id].proxima);
+  $("mTotal").textContent = preguntas.length;
+  $("mVistas").textContent = vistas.length;
+  $("mDominadas").textContent = vistas.filter((q) => progreso.q[q.id].caja >= 4).length;
+  const porCaja = [1, 2, 3, 4, 5].map((c) => vistas.filter((q) => progreso.q[q.id].caja === c).length);
+  const mayor = Math.max(1, ...porCaja);
+  $("cajas").innerHTML = porCaja.map((n, i) =>
+    `<div class="caja"><span>Caja ${i + 1}</span><div class="barra"><div style="width:${(100 * n) / mayor}%"></div></div><span>${n}</span></div>`).join("");
+  const d = progreso.historial[hoyISO()];
+  $("hoy").textContent = d ? `Hoy: ${d.correctas}/${d.respondidas} correctas (${Math.round((100 * d.correctas) / d.respondidas)}%).` : "Hoy aún no has respondido preguntas.";
+  const dificiles = preguntas.filter((q) => progreso.q[q.id] && progreso.q[q.id].fallos)
+    .sort((a, b) => progreso.q[b.id].fallos - progreso.q[a.id].fallos).slice(0, 8);
+  $("dificiles").innerHTML = dificiles.length
+    ? dificiles.map((q) => `<p>(${progreso.q[q.id].fallos} fallos) ${escapar(q.pregunta)}</p>`).join("")
+    : "Aún no hay fallos registrados.";
+}
+
+$("ajMax").onchange = () => { progreso.max = Math.max(5, +$("ajMax").value || 20); guardarProgreso(); };
+$("ajNuevas").onchange = () => { progreso.nuevas = Math.max(0, +$("ajNuevas").value || 0); guardarProgreso(); };
+$("borrar").onclick = () => {
+  if (!confirm(`¿Borrar todo tu progreso de "${materia}" en este dispositivo?`)) return;
+  guardado.borrar(claveProgreso()); cambiarMateria();
+};
+$("salir").onclick = () => { guardado.borrar("clave"); location.reload(); };
+
+// ---------- inicio ----------
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+const recordada = guardado.leer("clave", null);
+if (recordada) entrar(recordada, true).catch(() => guardado.borrar("clave"));
+</script>
+</body>
+</html>
