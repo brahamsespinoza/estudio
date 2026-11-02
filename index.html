@@ -190,7 +190,7 @@ let modo = "repaso", cola = [], falladas = new Set(), hechas = 0, bien = 0;
 const hoyISO = () => new Date().toLocaleDateString("en-CA");
 const sumarDias = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return d.toLocaleDateString("en-CA"); };
 const mezclar = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-const nombreCorto = (f) => f.replace(/\.pdf$/i, "").replace(/\.pptx$/i, "");
+const nombreCorto = (f) => f.split(/[\\/]/).pop().replace(/\.pdf$/i, "").replace(/\.pptx$/i, "");
 const escapar = (t) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 async function entrar(clave, recordar) {
