@@ -13,12 +13,12 @@
 :root {
   --bg: #f4f6f5; --card: #ffffff; --text: #1d2523; --muted: #5d6a66; --line: #dde3e1;
   --accent: #1f6f5c; --accent-soft: #e2f0eb; --ok: #1e7b45; --ok-soft: #e3f4ea;
-  --bad: #b3261e; --bad-soft: #fbe7e5; --radius: 14px;
+  --bad: #b3261e; --bad-soft: #fbe7e5; --warn: #8a5a00; --warn-soft: #fff3d6; --radius: 14px;
 }
 @media (prefers-color-scheme: dark) {
   :root { --bg: #121715; --card: #1b2220; --text: #e6ece9; --muted: #9aa8a3; --line: #2c3633;
     --accent: #5cc3a6; --accent-soft: #1f3530; --ok: #6fd39a; --ok-soft: #1b3326;
-    --bad: #ff8a80; --bad-soft: #3a1f1d; }
+    --bad: #ff8a80; --bad-soft: #3a1f1d; --warn: #f3c46b; --warn-soft: #3a3020; }
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text);
@@ -26,39 +26,70 @@ body { margin: 0; background: var(--bg); color: var(--text);
 main { max-width: 640px; margin: 0 auto; padding: 16px 16px calc(32px + env(safe-area-inset-bottom)); }
 h1 { font-size: 1.25rem; margin: 0; }
 h2 { font-size: 1.15rem; line-height: 1.4; margin: 6px 0 14px; }
+h3 { font-size: 1.02rem; margin: 0 0 6px; }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
 .muted { color: var(--muted); font-size: .9rem; }
 .hidden { display: none !important; }
 button, select, input { font: inherit; color: inherit; }
 .btn { display: block; width: 100%; padding: 13px 16px; border-radius: 12px; border: 0;
-  background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; }
+  background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; margin-top: 4px; }
 @media (prefers-color-scheme: dark) { .btn { color: #0f1513; } }
 .btn.secundario { background: var(--accent-soft); color: var(--accent); }
-.btn:disabled { opacity: .5; }
+.btn.chico { display: inline-block; width: auto; padding: 7px 12px; font-size: .88rem; margin: 0; }
+.btn:disabled { opacity: .45; cursor: default; }
 header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 header select { max-width: 55%; }
 select, input[type=password], input[type=number] { width: 100%; padding: 11px 12px; border-radius: 10px;
   border: 1px solid var(--line); background: var(--card); }
-.tabs, .seg { display: flex; gap: 6px; background: var(--accent-soft); padding: 4px; border-radius: 12px; margin-bottom: 14px; }
-.tabs button, .seg button { flex: 1; border: 0; background: transparent; padding: 9px 6px; border-radius: 9px;
-  color: var(--accent); font-weight: 600; font-size: .92rem; cursor: pointer; }
+.tabs, .seg { display: flex; gap: 4px; background: var(--accent-soft); padding: 4px; border-radius: 12px; margin-bottom: 14px; }
+.tabs button, .seg button { flex: 1; border: 0; background: transparent; padding: 9px 4px; border-radius: 9px;
+  color: var(--accent); font-weight: 600; font-size: .86rem; cursor: pointer; line-height: 1.2; }
 .tabs button.on, .seg button.on { background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.tipo { display: inline-block; font-size: .78rem; font-weight: 600; color: var(--accent); background: var(--accent-soft);
+  padding: 2px 8px; border-radius: 99px; margin-bottom: 4px; }
 .opcion { display: block; width: 100%; text-align: left; padding: 13px 14px; margin-bottom: 10px; cursor: pointer;
   border: 1.5px solid var(--line); border-radius: 12px; background: var(--card); line-height: 1.4; }
 .opcion b { color: var(--accent); margin-right: 6px; }
+.opcion.sel { border-color: var(--accent); background: var(--accent-soft); }
 .opcion.ok { border-color: var(--ok); background: var(--ok-soft); }
 .opcion.mal { border-color: var(--bad); background: var(--bad-soft); }
+.opcion.falto { border: 1.5px dashed var(--ok); }
 .opcion:disabled { cursor: default; }
+.par { border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
+.par.ok { border-color: var(--ok); background: var(--ok-soft); }
+.par.mal { border-color: var(--bad); background: var(--bad-soft); }
+.par .izq { font-weight: 600; margin-bottom: 6px; }
+.par .corr { font-size: .88rem; margin-top: 6px; color: var(--ok); }
+.zona { min-height: 52px; border: 1.5px dashed var(--line); border-radius: 12px; padding: 8px; margin-bottom: 12px; }
+.zona .vacia { color: var(--muted); font-size: .9rem; padding: 6px; }
+.paso { display: flex; gap: 10px; align-items: flex-start; width: 100%; text-align: left; padding: 10px 12px; margin: 0 0 8px;
+  border: 1.5px solid var(--line); border-radius: 10px; background: var(--card); cursor: pointer; line-height: 1.35; }
+.paso .n { flex: none; min-width: 24px; height: 24px; border-radius: 99px; background: var(--accent); color: #fff;
+  font-size: .82rem; font-weight: 700; display: grid; place-items: center; }
+@media (prefers-color-scheme: dark) { .paso .n { color: #0f1513; } }
+.paso.ok { border-color: var(--ok); background: var(--ok-soft); }
+.paso.mal { border-color: var(--bad); background: var(--bad-soft); }
+.texto-huecos { font-size: 1.05rem; line-height: 2.1; margin-bottom: 12px; }
+.hueco { display: inline-block; min-width: 72px; padding: 0 10px; margin: 0 2px; border: 0; border-bottom: 2px solid var(--accent);
+  background: var(--accent-soft); border-radius: 6px 6px 0 0; color: var(--accent); font-weight: 600; cursor: pointer; line-height: 1.7; }
+.hueco.ok { background: var(--ok-soft); color: var(--ok); border-color: var(--ok); }
+.hueco.mal { background: var(--bad-soft); color: var(--bad); border-color: var(--bad); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.chip { border: 1.5px solid var(--accent); color: var(--accent); background: var(--card); border-radius: 99px;
+  padding: 7px 14px; cursor: pointer; font-weight: 600; }
+.chip:disabled { opacity: .3; cursor: default; }
 .aviso { padding: 12px 14px; border-radius: 12px; margin: 4px 0 12px; }
 .aviso.ok { background: var(--ok-soft); color: var(--ok); }
 .aviso.mal { background: var(--bad-soft); color: var(--bad); }
+.aviso.warn { background: var(--warn-soft); color: var(--warn); }
 .explica { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
+.explica ul, .explica ol { margin: 6px 0 0; padding-left: 20px; }
 .barra { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 14px; }
 .barra > div { height: 100%; background: var(--accent); width: 0; transition: width .3s; }
 .lista { max-height: 210px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; padding: 4px 10px; margin-bottom: 12px; }
 .lista label { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: .93rem; }
 .lista label:last-child { border-bottom: 0; }
-.lista input { margin-top: 4px; width: 18px; height: 18px; flex: none; accent-color: var(--accent); }
+.lista input, .check input { margin-top: 4px; width: 18px; height: 18px; flex: none; accent-color: var(--accent); }
 .fila { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .fila input { width: 90px; text-align: center; }
 .metricas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
@@ -66,9 +97,23 @@ select, input[type=password], input[type=number] { width: 100%; padding: 11px 12
 .metricas strong { display: block; font-size: 1.35rem; color: var(--accent); }
 .caja { display: grid; grid-template-columns: 64px 1fr 36px; gap: 8px; align-items: center; font-size: .9rem; margin-bottom: 6px; }
 .caja .barra { margin: 0; }
+.tema-fila { display: grid; grid-template-columns: 1fr 70px 44px; gap: 8px; align-items: center; width: 100%; text-align: left;
+  border: 0; border-bottom: 1px solid var(--line); background: transparent; padding: 8px 0; cursor: pointer; font-size: .92rem; }
+.tema-fila .barra { margin: 0; }
+.tema-fila .pct { text-align: right; color: var(--muted); font-size: .85rem; }
+details { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; margin-top: 8px; }
+details summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+details ul { margin: 8px 0 4px; padding-left: 20px; }
+details li { margin-bottom: 4px; }
+.nemo { background: var(--warn-soft); color: var(--warn); border-radius: 8px; padding: 6px 10px; margin: 6px 0 4px; font-weight: 600; font-size: .92rem; }
+.pasos-plan { margin: 6px 0 0; padding-left: 20px; }
+.pasos-plan li { margin-bottom: 6px; }
+.resultado-fila { border-bottom: 1px solid var(--line); padding: 10px 0; }
+.resultado-fila:last-child { border-bottom: 0; }
+.nota { font-size: 2.2rem; font-weight: 800; text-align: center; margin: 4px 0; }
 #candado { min-height: 80vh; display: flex; flex-direction: column; justify-content: center; }
 #candado .btn { margin-top: 12px; }
-.check { display: flex; gap: 8px; align-items: center; margin-top: 12px; font-size: .92rem; color: var(--muted); }
+.check { display: flex; gap: 8px; align-items: flex-start; margin: 12px 0; font-size: .92rem; color: var(--muted); }
 .error { color: var(--bad); margin-top: 10px; font-size: .92rem; }
 label.titulo { display: block; font-weight: 600; margin: 4px 0 6px; }
 </style>
@@ -95,6 +140,7 @@ label.titulo { display: block; font-weight: 600; margin: 4px 0 6px; }
     </header>
     <nav class="tabs">
       <button data-tab="practica" class="on">✏️ Práctica</button>
+      <button data-tab="plan">📘 Plan y fichas</button>
       <button data-tab="progreso">📈 Progreso</button>
     </nav>
 
@@ -103,14 +149,21 @@ label.titulo { display: block; font-weight: 600; margin: 4px 0 6px; }
         <button data-modo="repaso" class="on">Repaso del día</button>
         <button data-modo="aleatorio">Aleatorio</button>
         <button data-modo="tema">Por tema</button>
+        <button data-modo="simulacro">Simulacro</button>
       </div>
 
       <div id="elegir" class="card hidden">
+        <div id="explicaSimulacro" class="aviso warn hidden">Simulacro de examen: no verás si acertaste hasta el final.
+          Al terminar tendrás tu nota, el detalle por módulo y la revisión de cada error.</div>
         <div id="filtros">
-          <label class="titulo">Documentos</label>
-          <div class="lista" id="listaDocs"></div>
-          <label class="titulo">Temas</label>
-          <div class="lista" id="listaTemas"></div>
+          <label class="titulo">Módulos</label>
+          <div class="lista" id="listaModulos"></div>
+          <div id="bloqueTemas">
+            <label class="titulo">Temas</label>
+            <div class="lista" id="listaTemas"></div>
+          </div>
+          <label class="titulo">Tipos de ejercicio</label>
+          <div class="lista" id="listaTipos"></div>
         </div>
         <div class="fila"><span>¿Cuántas preguntas?</span><input id="cantidad" type="number" min="1" value="20"></div>
         <button class="btn" id="empezar">Empezar</button>
@@ -119,17 +172,36 @@ label.titulo { display: block; font-weight: 600; margin: 4px 0 6px; }
       <div id="pregunta" class="card hidden">
         <div class="muted" id="avance"></div>
         <div class="barra"><div id="barraAvance"></div></div>
+        <span class="tipo" id="tipoEj"></span>
         <div class="muted" id="tema"></div>
         <h2 id="enunciado"></h2>
         <div id="opciones"></div>
+        <button class="btn hidden" id="responder">Responder</button>
         <div id="resultado"></div>
         <button class="btn hidden" id="siguiente">Siguiente ➡️</button>
       </div>
 
       <div id="fin" class="card hidden">
         <h2 id="finTexto"></h2>
+        <div id="finDetalle"></div>
         <button class="btn secundario" id="extra">Practicar 10 preguntas extra</button>
       </div>
+    </div>
+
+    <div id="tab-plan" class="hidden">
+      <div class="card">
+        <h3>Cómo estudiar con esta app</h3>
+        <ol class="pasos-plan">
+          <li><b>Lee las fichas</b> del módulo que toca (abajo). Son resúmenes con nemotecnias.</li>
+          <li><b>Repaso del día</b> todos los días, 15–20 minutos. Las preguntas nuevas entran módulo por módulo,
+            y los repasos mezclan todo lo que ya viste.</li>
+          <li><b>Equivócate sin miedo:</b> cada error vuelve al final de la sesión y mañana. Lee siempre la explicación.</li>
+          <li>Cuando un módulo pase el <b>80 % de dominio</b>, sigue con el siguiente (pulsa un tema para reforzarlo).</li>
+          <li>Una vez por semana haz un <b>Simulacro</b>. Antes del examen real apunta a 90 % o más.</li>
+        </ol>
+        <p class="muted" id="planSugerido"></p>
+      </div>
+      <div id="modulos"></div>
     </div>
 
     <div id="tab-progreso" class="hidden">
@@ -144,13 +216,19 @@ label.titulo { display: block; font-weight: 600; margin: 4px 0 6px; }
         <p class="muted" id="hoy"></p>
       </div>
       <div class="card">
+        <label class="titulo">Simulacros</label>
+        <div id="simulacros" class="muted">Aún no has hecho simulacros.</div>
+      </div>
+      <div class="card">
         <label class="titulo">Las que más te cuestan</label>
         <div id="dificiles" class="muted">Aún no hay fallos registrados.</div>
       </div>
       <div class="card">
-        <label class="titulo">Ajustes del repaso diario</label>
+        <label class="titulo">Ajustes</label>
         <div class="fila"><span>Preguntas por sesión</span><input id="ajMax" type="number" min="5" max="100"></div>
         <div class="fila"><span>Nuevas por día (máx.)</span><input id="ajNuevas" type="number" min="0" max="50"></div>
+        <div class="fila"><span>Nota para aprobar el simulacro (%)</span><input id="ajNota" type="number" min="50" max="100"></div>
+        <label class="check"><input id="ajOrden" type="checkbox"> Introducir las preguntas nuevas siguiendo el orden de los módulos (recomendado)</label>
         <button class="btn secundario" id="borrar">Borrar mi progreso de esta materia</button>
         <p class="muted">El progreso se guarda solo en este dispositivo.</p>
         <button class="btn secundario" id="salir">Cerrar sesión (olvidar contraseña)</button>
@@ -164,7 +242,9 @@ label.titulo { display: block; font-weight: 600; margin: 4px 0 6px; }
 "use strict";
 const $ = (id) => document.getElementById(id);
 const INTERVALOS = { 1: 1, 2: 2, 3: 4, 4: 8, 5: 16 };   // días hasta el próximo repaso según la caja
-const LETRAS = "ABCDEF";
+const LETRAS = "ABCDEFGHIJ";
+const TIPOS = { opcion: "Alternativas", multiple: "Marca todas las correctas", unir: "Unir / clasificar",
+  ordenar: "Ordenar los pasos", completar: "Completar la frase" };
 
 // ---------- almacenamiento local (tolerante a errores) ----------
 const guardado = {
@@ -184,14 +264,17 @@ async function descifrar(paquete, clave) {
   return JSON.parse(new TextDecoder().decode(plano));
 }
 
-let DATOS = null, materia = null, preguntas = [], progreso = null;
-let modo = "repaso", cola = [], falladas = new Set(), hechas = 0, bien = 0;
+let DATOS = null, materia = null, preguntas = [], fichas = [], progreso = null, porId = {};
+let modo = "repaso", cola = [], falladas = new Set(), hechas = 0, bien = 0, simu = null;
 
 const hoyISO = () => new Date().toLocaleDateString("en-CA");
 const sumarDias = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return d.toLocaleDateString("en-CA"); };
 const mezclar = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const nombreCorto = (f) => f.split(/[\\/]/).pop().replace(/\.pdf$/i, "").replace(/\.pptx$/i, "");
-const escapar = (t) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const escapar = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const tipoDe = (q) => q.tipo || "opcion";
+const moduloDe = (q) => q.modulo || nombreCorto(q.fuente);
+const iguales = (a, b) => String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
 
 async function entrar(clave, recordar) {
   const paquete = await (await fetch("datos.enc.json", { cache: "no-cache" })).json();
@@ -217,25 +300,38 @@ $("clave").addEventListener("keydown", (e) => { if (e.key === "Enter") $("entrar
 // ---------- progreso por materia ----------
 function claveProgreso() { return "progreso:" + materia; }
 function estado(id) { return progreso.q[id] || (progreso.q[id] = { caja: 1, proxima: "", aciertos: 0, fallos: 0 }); }
+const visto = (q) => progreso.q[q.id] && progreso.q[q.id].proxima;
+const cajaDe = (q) => (progreso.q[q.id] ? progreso.q[q.id].caja : 0);
 function guardarProgreso() { guardado.escribir(claveProgreso(), progreso); }
 
 function cambiarMateria() {
   materia = $("materia").value;
   guardado.escribir("materia", materia);
   preguntas = DATOS.materias[materia];
-  progreso = guardado.leer(claveProgreso(), null) || { q: {}, historial: {}, max: 20, nuevas: 10 };
+  fichas = (DATOS.fichas && DATOS.fichas[materia]) || [];
+  porId = Object.fromEntries(preguntas.map((q) => [q.id, q]));
+  progreso = Object.assign({ q: {}, historial: {}, max: 20, nuevas: 10, nota: 80, orden: true, simulacros: [] },
+    guardado.leer(claveProgreso(), {}));
   $("ajMax").value = progreso.max; $("ajNuevas").value = progreso.nuevas;
+  $("ajNota").value = progreso.nota; $("ajOrden").checked = progreso.orden;
   armarFiltros();
   elegirModo(modo);
   pintarProgreso();
+  pintarPlan();
 }
 $("materia").onchange = cambiarMateria;
 
+function modulosOrdenados() { return [...new Set(preguntas.map(moduloDe))].sort((a, b) => a.localeCompare(b, "es", { numeric: true })); }
+
 function sesionDelDia() {
   const hoy = hoyISO();
-  const pendientes = preguntas.filter((q) => { const e = progreso.q[q.id]; return e && e.proxima && e.proxima <= hoy; })
-    .sort((a, b) => estado(a.id).caja - estado(b.id).caja);
-  const nuevas = mezclar(preguntas.filter((q) => !(progreso.q[q.id] && progreso.q[q.id].proxima)));
+  const pendientes = preguntas.filter((q) => visto(q) && progreso.q[q.id].proxima <= hoy)
+    .sort((a, b) => cajaDe(a) - cajaDe(b));
+  let nuevas = mezclar(preguntas.filter((q) => !visto(q)));
+  if (progreso.orden) {
+    const orden = modulosOrdenados();
+    nuevas.sort((a, b) => orden.indexOf(moduloDe(a)) - orden.indexOf(moduloDe(b)));   // estable: dentro del módulo siguen mezcladas
+  }
   const elegidas = pendientes.slice(0, progreso.max);
   elegidas.push(...nuevas.slice(0, Math.max(0, Math.min(progreso.nuevas, progreso.max - elegidas.length))));
   return mezclar(elegidas).map((q) => q.id);
@@ -257,84 +353,247 @@ function registrar(id, acerto, primerIntento) {
 function elegirModo(m) {
   modo = m;
   document.querySelectorAll("#modos button").forEach((b) => b.classList.toggle("on", b.dataset.modo === m));
-  $("filtros").classList.toggle("hidden", m !== "tema");
+  $("filtros").classList.toggle("hidden", m === "aleatorio");
+  $("bloqueTemas").classList.toggle("hidden", m === "simulacro");
+  $("explicaSimulacro").classList.toggle("hidden", m !== "simulacro");
   if (m === "repaso") { iniciar(sesionDelDia()); $("elegir").classList.add("hidden"); }
   else { mostrar("elegir"); $("cantidad").value = 20; actualizarCantidad(); }
 }
 document.querySelectorAll("#modos button").forEach((b) => (b.onclick = () => elegirModo(b.dataset.modo)));
 
 function marcados(id) { return [...document.querySelectorAll(`#${id} input:checked`)].map((i) => i.value); }
+function casillas(valores, conteo, etiqueta = (v) => v) {
+  return valores.map((v) => `<label><input type="checkbox" value="${escapar(v)}">${escapar(etiqueta(v))}` +
+    ` <span class="muted">(${conteo[v] || 0})</span></label>`).join("");
+}
+function contar(lista, f) { const c = {}; lista.forEach((q) => { const k = f(q); if (k) c[k] = (c[k] || 0) + 1; }); return c; }
 function armarFiltros() {
-  const docs = [...new Set(preguntas.map((q) => q.fuente))].sort();
-  $("listaDocs").innerHTML = docs.map((d) =>
-    `<label><input type="checkbox" value="${escapar(d)}">${escapar(nombreCorto(d))}</label>`).join("");
-  $("listaDocs").onchange = () => { armarTemas(); actualizarCantidad(); };
+  $("listaModulos").innerHTML = casillas(modulosOrdenados(), contar(preguntas, moduloDe));
+  $("listaModulos").onchange = () => { armarTemas(); actualizarCantidad(); };
+  const tipos = Object.keys(TIPOS).filter((t) => preguntas.some((q) => tipoDe(q) === t));
+  $("listaTipos").innerHTML = casillas(tipos, contar(preguntas, tipoDe), (t) => TIPOS[t]);
+  $("listaTipos").onchange = actualizarCantidad;
   armarTemas();
 }
 function armarTemas() {
-  const docs = marcados("listaDocs");
-  const base = docs.length ? preguntas.filter((q) => docs.includes(q.fuente)) : preguntas;
-  const conteo = {};
-  base.forEach((q) => { if (q.tema) conteo[q.tema] = (conteo[q.tema] || 0) + 1; });
-  $("listaTemas").innerHTML = Object.keys(conteo).sort().map((t) =>
-    `<label><input type="checkbox" value="${escapar(t)}">${escapar(t)} <span class="muted">(${conteo[t]})</span></label>`).join("");
+  const mods = marcados("listaModulos");
+  const base = mods.length ? preguntas.filter((q) => mods.includes(moduloDe(q))) : preguntas;
+  const conteo = contar(base, (q) => q.tema);
+  $("listaTemas").innerHTML = casillas(Object.keys(conteo).sort(), conteo);
   $("listaTemas").onchange = actualizarCantidad;
 }
 function candidatas() {
-  if (modo !== "tema") return preguntas;
-  const docs = marcados("listaDocs"), temas = marcados("listaTemas");
-  return preguntas.filter((q) => (!docs.length || docs.includes(q.fuente)) && (!temas.length || temas.includes(q.tema)));
+  if (modo === "aleatorio") return preguntas;
+  const mods = marcados("listaModulos"), tipos = marcados("listaTipos");
+  const temas = modo === "tema" ? marcados("listaTemas") : [];
+  return preguntas.filter((q) => (!mods.length || mods.includes(moduloDe(q))) &&
+    (!temas.length || temas.includes(q.tema)) && (!tipos.length || tipos.includes(tipoDe(q))));
 }
 function actualizarCantidad() {
   const n = candidatas().length;
   $("cantidad").max = n;
   if (+$("cantidad").value > n || +$("cantidad").value < 1) $("cantidad").value = Math.min(20, n);
-  $("empezar").textContent = `Empezar (${n} disponibles)`;
+  $("empezar").textContent = modo === "simulacro" ? `Empezar simulacro (${n} disponibles)` : `Empezar (${n} disponibles)`;
   $("empezar").disabled = n === 0;
 }
 $("empezar").onclick = () => {
   const lista = candidatas();
   const n = Math.max(1, Math.min(lista.length, +$("cantidad").value || 20));
-  iniciar(mezclar(lista).slice(0, n).map((q) => q.id));
+  const ids = mezclar(lista).slice(0, n).map((q) => q.id);
+  if (modo === "simulacro") iniciarSimulacro(ids); else iniciar(ids);
 };
 
-// ---------- sesión de preguntas ----------
+// ---------- sesión ----------
 function mostrar(id) { ["elegir", "pregunta", "fin"].forEach((s) => $(s).classList.toggle("hidden", s !== id)); }
 
-function iniciar(ids) { cola = ids; falladas = new Set(); hechas = 0; bien = 0; siguiente(); }
+function iniciar(ids, comoSimulacro = false) {
+  simu = comoSimulacro ? { total: ids.length, resultados: [] } : null;
+  cola = ids; falladas = new Set(); hechas = 0; bien = 0; siguiente();
+}
+function iniciarSimulacro(ids) { iniciar(ids, true); }
 
+function practicar(ids, titulo) {          // desde el plan: sesión enfocada en un módulo o tema
+  irATab("practica");
+  modo = "tema";
+  document.querySelectorAll("#modos button").forEach((b) => b.classList.toggle("on", b.dataset.modo === "tema"));
+  iniciar(ids);
+  $("tema").textContent = titulo + " · " + $("tema").textContent;
+}
+
+let respuesta = null;          // respuesta en construcción para la pregunta actual
 function siguiente() {
-  if (!cola.length) return terminar();
-  const q = preguntas.find((p) => p.id === cola[0]);
+  if (!cola.length) return simu ? terminarSimulacro() : terminar();
+  const q = porId[cola[0]];
   mostrar("pregunta");
-  const total = hechas + cola.length;
-  $("avance").textContent = `Respondidas: ${hechas} · Quedan: ${cola.length}`;
-  $("barraAvance").style.width = `${(100 * hechas) / Math.max(1, total)}%`;
-  $("tema").textContent = `${q.tema ? q.tema + " · " : ""}Caja ${estado(q.id).caja}/5`;
+  if (simu) {
+    const n = simu.resultados.length;
+    $("avance").textContent = `Simulacro · pregunta ${n + 1} de ${simu.total}`;
+    $("barraAvance").style.width = `${(100 * n) / simu.total}%`;
+  } else {
+    $("avance").textContent = `Respondidas: ${hechas} · Quedan: ${cola.length}`;
+    $("barraAvance").style.width = `${(100 * hechas) / Math.max(1, hechas + cola.length)}%`;
+  }
+  $("tipoEj").textContent = TIPOS[tipoDe(q)];
+  $("tema").textContent = `${moduloDe(q)}${q.tema ? " · " + q.tema : ""} · Caja ${estado(q.id).caja}/5`;
   $("enunciado").textContent = q.pregunta;
   $("resultado").innerHTML = "";
   $("siguiente").classList.add("hidden");
-  $("opciones").innerHTML = q.opciones.map((o, i) =>
-    `<button class="opcion" data-i="${i}"><b>${LETRAS[i]})</b>${escapar(o)}</button>`).join("");
-  document.querySelectorAll(".opcion").forEach((b) => (b.onclick = () => responder(q, +b.dataset.i)));
+  $("responder").classList.add("hidden");
+  $("responder").disabled = true;
+  PINTAR[tipoDe(q)](q);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function responder(q, i) {
-  const acerto = i === q.correcta, primero = !falladas.has(q.id);
-  registrar(q.id, acerto, primero);
-  if (primero) { hechas++; if (acerto) bien++; }
-  document.querySelectorAll(".opcion").forEach((b) => {
-    b.disabled = true;
-    if (+b.dataset.i === q.correcta) b.classList.add("ok");
-    else if (+b.dataset.i === i) b.classList.add("mal");
-  });
+function listoParaResponder(ok) { $("responder").classList.remove("hidden"); $("responder").disabled = !ok; }
+$("responder").onclick = () => responder(porId[cola[0]], respuesta);
+
+// --- dibujo de cada tipo de ejercicio ---
+const PINTAR = {
+  opcion(q) {
+    $("opciones").innerHTML = q.opciones.map((o, i) =>
+      `<button class="opcion" data-i="${i}"><b>${LETRAS[i]})</b>${escapar(o)}</button>`).join("");
+    document.querySelectorAll(".opcion").forEach((b) => (b.onclick = () => responder(q, +b.dataset.i)));
+  },
+  multiple(q) {
+    respuesta = [];
+    $("opciones").innerHTML = `<p class="muted">Puede haber una o varias correctas.</p>` + q.opciones.map((o, i) =>
+      `<button class="opcion" data-i="${i}"><b>☐</b>${escapar(o)}</button>`).join("");
+    document.querySelectorAll(".opcion").forEach((b) => (b.onclick = () => {
+      const i = +b.dataset.i, k = respuesta.indexOf(i);
+      if (k >= 0) respuesta.splice(k, 1); else respuesta.push(i);
+      b.classList.toggle("sel", k < 0);
+      b.querySelector("b").textContent = k < 0 ? "☑" : "☐";
+      listoParaResponder(respuesta.length > 0);
+    }));
+    listoParaResponder(false);
+  },
+  unir(q) {
+    const derechas = mezclar([...new Set(q.pares.map((p) => p[1]))]);
+    respuesta = q.pares.map(() => "");
+    $("opciones").innerHTML = q.pares.map((p, i) => `<div class="par" data-i="${i}"><div class="izq">${escapar(p[0])}</div>
+      <select data-i="${i}"><option value="">Elige…</option>${derechas.map((d) =>
+        `<option value="${escapar(d)}">${escapar(d)}</option>`).join("")}</select></div>`).join("");
+    document.querySelectorAll("#opciones select").forEach((s) => (s.onchange = () => {
+      respuesta[+s.dataset.i] = s.value;
+      listoParaResponder(respuesta.every(Boolean));
+    }));
+    listoParaResponder(false);
+  },
+  ordenar(q) {
+    respuesta = [];
+    let pool = mezclar(q.pasos);
+    if (pool.every((p, i) => p === q.pasos[i]) && pool.length > 1) pool = pool.slice(1).concat(pool[0]);
+    const dibujar = () => {
+      $("opciones").innerHTML =
+        `<label class="titulo">Tu orden <span class="muted">(toca un paso para quitarlo)</span></label>
+         <div class="zona" id="zonaOrden">${respuesta.length ? respuesta.map((p, i) =>
+          `<button class="paso" data-o="${i}"><span class="n">${i + 1}</span><span>${escapar(p)}</span></button>`).join("")
+          : `<div class="vacia">Toca los pasos de abajo en el orden correcto.</div>`}</div>
+         <label class="titulo">Pasos disponibles</label>
+         <div id="pool">${pool.map((p, i) =>
+          `<button class="paso" data-p="${i}"><span class="n">+</span><span>${escapar(p)}</span></button>`).join("")}</div>`;
+      document.querySelectorAll("[data-p]").forEach((b) => (b.onclick = () => { respuesta.push(pool.splice(+b.dataset.p, 1)[0]); dibujar(); }));
+      document.querySelectorAll("[data-o]").forEach((b) => (b.onclick = () => { pool.push(respuesta.splice(+b.dataset.o, 1)[0]); dibujar(); }));
+      listoParaResponder(pool.length === 0);
+    };
+    dibujar();
+  },
+  completar(q) {
+    const banco = mezclar(q.huecos.concat(q.distractores || []));
+    const usado = new Array(banco.length).fill(-1);     // hueco donde está cada palabra (-1 = libre)
+    respuesta = q.huecos.map(() => null);               // índice de palabra en cada hueco
+    const partes = q.texto.split("___");
+    const dibujar = () => {
+      $("opciones").innerHTML = `<div class="texto-huecos">${partes.map((t, i) => escapar(t) + (i < q.huecos.length
+          ? `<button class="hueco" data-h="${i}">${respuesta[i] === null ? "&nbsp;" + (i + 1) + "&nbsp;" : escapar(banco[respuesta[i]])}</button>` : "")).join("")}</div>
+        <p class="muted">Toca una palabra para ponerla en el siguiente espacio vacío; toca un espacio para vaciarlo.</p>
+        <div class="chips">${banco.map((w, i) => `<button class="chip" data-w="${i}" ${usado[i] >= 0 ? "disabled" : ""}>${escapar(w)}</button>`).join("")}</div>`;
+      document.querySelectorAll("[data-w]").forEach((b) => (b.onclick = () => {
+        const h = respuesta.indexOf(null); if (h < 0) return;
+        respuesta[h] = +b.dataset.w; usado[+b.dataset.w] = h; dibujar();
+      }));
+      document.querySelectorAll("[data-h]").forEach((b) => (b.onclick = () => {
+        const h = +b.dataset.h; if (respuesta[h] === null) return;
+        usado[respuesta[h]] = -1; respuesta[h] = null; dibujar();
+      }));
+      listoParaResponder(respuesta.every((r) => r !== null));
+    };
+    PINTAR._bancoCompletar = banco;
+    dibujar();
+  },
+};
+
+// --- corrección ---
+function evaluar(q, r) {          // -> {acerto, bien, total}
+  const t = tipoDe(q);
+  if (t === "opcion") return { acerto: r === q.correcta, bien: +(r === q.correcta), total: 1 };
+  if (t === "multiple") {
+    const bienN = q.opciones.filter((_, i) => r.includes(i) === q.correctas.includes(i)).length;
+    return { acerto: bienN === q.opciones.length, bien: bienN, total: q.opciones.length };
+  }
+  const esperado = t === "unir" ? q.pares.map((p) => p[1]) : t === "ordenar" ? q.pasos : q.huecos;
+  const bienN = esperado.filter((e, i) => iguales(r[i], e)).length;
+  return { acerto: bienN === esperado.length, bien: bienN, total: esperado.length };
+}
+function textoRespuesta(q, r) {    // la respuesta del usuario en forma comparable (para completar: palabras)
+  return tipoDe(q) === "completar" ? r.map((i) => PINTAR._bancoCompletar[i]) : r;
+}
+function solucionHTML(q) {
+  const t = tipoDe(q);
+  if (t === "opcion") return `<b>${escapar(q.opciones[q.correcta])}</b>`;
+  if (t === "multiple") return "<ul>" + q.correctas.map((i) => `<li>${escapar(q.opciones[i])}</li>`).join("") + "</ul>";
+  if (t === "unir") return "<ul>" + q.pares.map((p) => `<li>${escapar(p[0])} → <b>${escapar(p[1])}</b></li>`).join("") + "</ul>";
+  if (t === "ordenar") return "<ol>" + q.pasos.map((p) => `<li>${escapar(p)}</li>`).join("") + "</ol>";
+  let i = 0;
+  return escapar(q.texto).replace(/___/g, () => `<b>${escapar(q.huecos[i++])}</b>`);
+}
+
+function marcarCorreccion(q, r) {
+  const t = tipoDe(q);
+  document.querySelectorAll("#opciones button, #opciones select").forEach((b) => (b.disabled = true));
+  if (t === "opcion" || t === "multiple") {
+    const correctas = t === "opcion" ? [q.correcta] : q.correctas, elegidas = t === "opcion" ? [r] : r;
+    document.querySelectorAll(".opcion").forEach((b) => {
+      const i = +b.dataset.i;
+      if (correctas.includes(i)) b.classList.add(elegidas.includes(i) ? "ok" : "falto");
+      else if (elegidas.includes(i)) b.classList.add("mal");
+    });
+  } else if (t === "unir") {
+    document.querySelectorAll(".par").forEach((d) => {
+      const i = +d.dataset.i, ok = iguales(r[i], q.pares[i][1]);
+      d.classList.add(ok ? "ok" : "mal");
+      if (!ok) d.insertAdjacentHTML("beforeend", `<div class="corr">Correcto: <b>${escapar(q.pares[i][1])}</b></div>`);
+    });
+  } else if (t === "ordenar") {
+    document.querySelectorAll("#zonaOrden .paso").forEach((b) => b.classList.add(iguales(r[+b.dataset.o], q.pasos[+b.dataset.o]) ? "ok" : "mal"));
+    $("pool").innerHTML = "";
+  } else {
+    document.querySelectorAll(".hueco").forEach((b) => b.classList.add(iguales(r[+b.dataset.h], q.huecos[+b.dataset.h]) ? "ok" : "mal"));
+    document.querySelector(".chips").remove();
+  }
+}
+
+function responder(q, rCruda) {
+  const r = textoRespuesta(q, rCruda);
+  const ev = evaluar(q, r);
+  const primero = !falladas.has(q.id);
+  registrar(q.id, ev.acerto, primero);
+  $("responder").classList.add("hidden");
+  if (simu) {                                   // simulacro: sin retroalimentación hasta el final
+    simu.resultados.push({ id: q.id, ...ev, r });
+    cola.shift();
+    return siguiente();
+  }
+  if (primero) { hechas++; if (ev.acerto) bien++; }
+  marcarCorreccion(q, r);
+  const parcial = !ev.acerto && ev.total > 1 ? ` (${ev.bien} de ${ev.total} partes bien)` : "";
   $("resultado").innerHTML =
-    (acerto ? `<div class="aviso ok">✅ ¡Correcto!</div>`
-            : `<div class="aviso mal">❌ Incorrecto. Volverá a aparecer al final de esta sesión.</div>`) +
+    (ev.acerto ? `<div class="aviso ok">✅ ¡Correcto!</div>`
+               : `<div class="aviso mal">❌ Incorrecto${parcial}. Volverá a aparecer al final de esta sesión.</div>`) +
+    (ev.acerto || tipoDe(q) === "opcion" ? "" : `<div class="explica"><b>Respuesta correcta:</b> ${solucionHTML(q)}</div>`) +
     `<div class="explica">${escapar(q.explicacion)}</div><p class="muted">Fuente: ${escapar(nombreCorto(q.fuente))}</p>`;
-  if (!acerto) falladas.add(q.id);
-  $("siguiente").dataset.acerto = acerto ? "1" : "";
+  if (!ev.acerto) falladas.add(q.id);
+  $("siguiente").dataset.acerto = ev.acerto ? "1" : "";
   $("siguiente").classList.remove("hidden");
   pintarProgreso();
 }
@@ -347,36 +606,115 @@ $("siguiente").onclick = () => {
 
 function terminar() {
   mostrar("fin");
+  $("finDetalle").innerHTML = "";
   $("finTexto").textContent = hechas
     ? `🎉 ¡Sesión terminada! ${bien}/${hechas} correctas al primer intento.`
     : "No tienes repasos pendientes hoy. ¡Vuelve mañana o prueba el modo Aleatorio!";
   $("extra").classList.toggle("hidden", modo !== "repaso");
-  if (modo !== "repaso") $("elegir").classList.remove("hidden");
+  pintarPlan();
 }
 $("extra").onclick = () => {
-  const ids = preguntas.slice().sort((a, b) => estado(a.id).caja - estado(b.id).caja).slice(0, 10).map((q) => q.id);
+  const ids = mezclar(preguntas).sort((a, b) => cajaDe(a) - cajaDe(b)).slice(0, 10).map((q) => q.id);
   iniciar(mezclar(ids));
 };
 
-// ---------- pestañas y progreso ----------
-document.querySelectorAll(".tabs button").forEach((b) => (b.onclick = () => {
-  document.querySelectorAll(".tabs button").forEach((x) => x.classList.toggle("on", x === b));
-  $("tab-practica").classList.toggle("hidden", b.dataset.tab !== "practica");
-  $("tab-progreso").classList.toggle("hidden", b.dataset.tab !== "progreso");
-  pintarProgreso();
-}));
+function terminarSimulacro() {
+  const res = simu.resultados, ok = res.filter((x) => x.acerto).length;
+  const nota = Math.round((100 * ok) / Math.max(1, res.length)), aprobado = nota >= progreso.nota;
+  progreso.simulacros.push({ fecha: hoyISO(), nota, n: res.length });
+  guardarProgreso();
+  mostrar("fin");
+  $("extra").classList.add("hidden");
+  $("finTexto").innerHTML = `<div class="nota" style="color:var(${aprobado ? "--ok" : "--bad"})">${nota}%</div>` +
+    `<div style="text-align:center">${aprobado ? "✅ Aprobado" : "❌ Desaprobado"} · ${ok} de ${res.length} correctas · mínimo ${progreso.nota}%</div>`;
+  const porMod = {};
+  res.forEach((x) => { const m = moduloDe(porId[x.id]); porMod[m] = porMod[m] || [0, 0]; porMod[m][1]++; if (x.acerto) porMod[m][0]++; });
+  const errores = res.filter((x) => !x.acerto);
+  $("finDetalle").innerHTML = `<label class="titulo">Resultado por módulo</label>` +
+    Object.keys(porMod).sort((a, b) => a.localeCompare(b, "es", { numeric: true })).map((m) => {
+      const [b, t] = porMod[m], p = Math.round((100 * b) / t);
+      return `<div class="tema-fila" style="cursor:default"><span>${escapar(m)}</span><div class="barra"><div style="width:${p}%"></div></div><span class="pct">${b}/${t}</span></div>`;
+    }).join("") +
+    (errores.length ? `<label class="titulo" style="margin-top:14px">Revisa tus errores (${errores.length})</label>` +
+      errores.map((x) => { const q = porId[x.id];
+        return `<div class="resultado-fila"><b>${escapar(q.pregunta)}</b><div class="explica" style="margin:8px 0 6px">${solucionHTML(q)}</div><div class="muted">${escapar(q.explicacion)}</div></div>`;
+      }).join("") +
+      `<button class="btn" id="repasarErrores">Practicar mis errores ahora</button>` : "") +
+    `<button class="btn secundario" id="otroSimulacro">Hacer otro simulacro</button>`;
+  if ($("repasarErrores")) $("repasarErrores").onclick = () => practicar(mezclar(errores.map((x) => x.id)), "Errores del simulacro");
+  $("otroSimulacro").onclick = () => elegirModo("simulacro");
+  simu = null;
+  pintarProgreso(); pintarPlan();
+}
 
+// ---------- pestañas ----------
+function irATab(tab) {
+  document.querySelectorAll(".tabs button").forEach((x) => x.classList.toggle("on", x.dataset.tab === tab));
+  ["practica", "plan", "progreso"].forEach((t) => $("tab-" + t).classList.toggle("hidden", t !== tab));
+  if (tab === "progreso") pintarProgreso();
+  if (tab === "plan") pintarPlan();
+  window.scrollTo({ top: 0 });
+}
+document.querySelectorAll(".tabs button").forEach((b) => (b.onclick = () => irATab(b.dataset.tab)));
+
+// ---------- plan de estudio ----------
+const dominio = (lista) => lista.length ? Math.round((100 * lista.filter((q) => cajaDe(q) >= 4).length) / lista.length) : 0;
+function enfoque(lista) {                       // primero lo menos dominado, hasta 15
+  return mezclar(lista).sort((a, b) => cajaDe(a) - cajaDe(b)).slice(0, 15).map((q) => q.id);
+}
+function pintarPlan() {
+  if (!preguntas.length) return;
+  const mods = modulosOrdenados();
+  const actual = mods.find((m) => dominio(preguntas.filter((q) => moduloDe(q) === m)) < 80);
+  $("planSugerido").textContent = mods.length > 1
+    ? `Plan sugerido: un módulo por semana (${mods.length} semanas) y luego repaso general con simulacros. ` +
+      (actual ? `Ahora te toca: ${actual}.` : "¡Dominas todos los módulos! Mantén el repaso diario y los simulacros.")
+    : "";
+  $("modulos").innerHTML = mods.map((m, k) => {
+    const qs = preguntas.filter((q) => moduloDe(q) === m);
+    const temas = [...new Set(qs.map((q) => q.tema).filter(Boolean))].sort();
+    const fs = fichas.filter((f) => f.modulo === m);
+    const d = dominio(qs);
+    return `<div class="card">
+      <h3>${escapar(m)} ${m === actual ? '<span class="tipo">Te toca</span>' : ""}</h3>
+      <div class="muted">${qs.filter(visto).length} de ${qs.length} vistas · ${d}% dominado</div>
+      <div class="barra"><div style="width:${d}%"></div></div>
+      ${fs.map((f) => `<details><summary>📄 ${escapar(f.titulo)}</summary><ul>${f.puntos.map((p) => `<li>${escapar(p)}</li>`).join("")}</ul>
+        ${f.nemotecnia ? `<div class="nemo">💡 ${escapar(f.nemotecnia)}</div>` : ""}</details>`).join("")}
+      <details><summary>Temas (${temas.length}) · toca uno para practicarlo</summary>
+        ${temas.map((t) => { const tq = qs.filter((q) => q.tema === t), p = dominio(tq);
+          return `<button class="tema-fila" data-m="${k}" data-t="${escapar(t)}"><span>${escapar(t)}</span><div class="barra"><div style="width:${p}%"></div></div><span class="pct">${tq.length}</span></button>`;
+        }).join("")}
+      </details>
+      <button class="btn secundario" data-practicar="${k}" style="margin-top:10px">Practicar este módulo (15 preguntas)</button>
+    </div>`;
+  }).join("");
+  document.querySelectorAll("[data-practicar]").forEach((b) => (b.onclick = () => {
+    const m = mods[+b.dataset.practicar];
+    practicar(enfoque(preguntas.filter((q) => moduloDe(q) === m)), m);
+  }));
+  document.querySelectorAll(".tema-fila[data-t]").forEach((b) => (b.onclick = () => {
+    const m = mods[+b.dataset.m], t = b.dataset.t;
+    practicar(enfoque(preguntas.filter((q) => moduloDe(q) === m && q.tema === t)), t);
+  }));
+}
+
+// ---------- progreso ----------
 function pintarProgreso() {
-  const vistas = preguntas.filter((q) => progreso.q[q.id] && progreso.q[q.id].proxima);
+  const vistas = preguntas.filter(visto);
   $("mTotal").textContent = preguntas.length;
   $("mVistas").textContent = vistas.length;
-  $("mDominadas").textContent = vistas.filter((q) => progreso.q[q.id].caja >= 4).length;
-  const porCaja = [1, 2, 3, 4, 5].map((c) => vistas.filter((q) => progreso.q[q.id].caja === c).length);
+  $("mDominadas").textContent = vistas.filter((q) => cajaDe(q) >= 4).length;
+  const porCaja = [1, 2, 3, 4, 5].map((c) => vistas.filter((q) => cajaDe(q) === c).length);
   const mayor = Math.max(1, ...porCaja);
   $("cajas").innerHTML = porCaja.map((n, i) =>
     `<div class="caja"><span>Caja ${i + 1}</span><div class="barra"><div style="width:${(100 * n) / mayor}%"></div></div><span>${n}</span></div>`).join("");
   const d = progreso.historial[hoyISO()];
   $("hoy").textContent = d ? `Hoy: ${d.correctas}/${d.respondidas} correctas (${Math.round((100 * d.correctas) / d.respondidas)}%).` : "Hoy aún no has respondido preguntas.";
+  const sims = progreso.simulacros.slice(-8).reverse();
+  $("simulacros").innerHTML = sims.length
+    ? sims.map((s) => `<p>${s.fecha.split("-").reverse().join("/")} · <b style="color:var(${s.nota >= progreso.nota ? "--ok" : "--bad"})">${s.nota}%</b> en ${s.n} preguntas</p>`).join("")
+    : "Aún no has hecho simulacros.";
   const dificiles = preguntas.filter((q) => progreso.q[q.id] && progreso.q[q.id].fallos)
     .sort((a, b) => progreso.q[b.id].fallos - progreso.q[a.id].fallos).slice(0, 8);
   $("dificiles").innerHTML = dificiles.length
@@ -386,6 +724,8 @@ function pintarProgreso() {
 
 $("ajMax").onchange = () => { progreso.max = Math.max(5, +$("ajMax").value || 20); guardarProgreso(); };
 $("ajNuevas").onchange = () => { progreso.nuevas = Math.max(0, +$("ajNuevas").value || 0); guardarProgreso(); };
+$("ajNota").onchange = () => { progreso.nota = Math.min(100, Math.max(50, +$("ajNota").value || 80)); guardarProgreso(); };
+$("ajOrden").onchange = () => { progreso.orden = $("ajOrden").checked; guardarProgreso(); };
 $("borrar").onclick = () => {
   if (!confirm(`¿Borrar todo tu progreso de "${materia}" en este dispositivo?`)) return;
   guardado.borrar(claveProgreso()); cambiarMateria();

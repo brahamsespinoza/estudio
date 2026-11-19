@@ -1,5 +1,5 @@
 // Permite abrir la app sin internet: usa la red si hay, y si no, la última copia guardada.
-const CACHE = "estudio-v1";
+const CACHE = "estudio-v2";
 const ARCHIVOS = ["./", "index.html", "datos.enc.json", "manifest.webmanifest", "icon.svg"];
 
 self.addEventListener("install", (e) => {
