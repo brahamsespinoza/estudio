@@ -116,6 +116,20 @@ details li { margin-bottom: 4px; }
 .check { display: flex; gap: 8px; align-items: flex-start; margin: 12px 0; font-size: .92rem; color: var(--muted); }
 .error { color: var(--bad); margin-top: 10px; font-size: .92rem; }
 label.titulo { display: block; font-weight: 600; margin: 4px 0 6px; }
+input[type=text] { width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); }
+.campo { margin-bottom: 10px; }
+.campo input, .campo select { margin-top: 4px; }
+.badge { display: inline-block; font-size: .74rem; font-weight: 700; padding: 1px 7px; border-radius: 99px; margin-left: 4px;
+  background: var(--accent-soft); color: var(--accent); vertical-align: middle; }
+.badge.off { background: var(--bad-soft); color: var(--bad); }
+.usuario-fila { display: block; width: 100%; text-align: left; background: transparent; border: 0; border-bottom: 1px solid var(--line);
+  padding: 10px 0; cursor: pointer; }
+.usuario-fila:last-child { border-bottom: 0; }
+.grupo-mods { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin-bottom: 10px; }
+.grupo-mods label { display: flex; gap: 8px; align-items: flex-start; padding: 4px 0; font-size: .92rem; }
+.grupo-mods input { width: 18px; height: 18px; margin-top: 3px; flex: none; accent-color: var(--accent); }
+.fila-botones { display: flex; gap: 8px; }
+.fila-botones .btn { flex: 1; }
 </style>
 </head>
 <body>
@@ -124,11 +138,11 @@ label.titulo { display: block; font-weight: 600; margin: 4px 0 6px; }
   <section id="candado">
     <div class="card">
       <h1>🔒 Entrenador de Estudio</h1>
-      <p class="muted">Contenido privado. Ingresa la contraseña.</p>
+      <p class="muted">Contenido privado. Ingresa con el usuario y la contraseña que te dio el administrador.</p>
+      <div class="campo"><input id="usuario" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="Usuario"></div>
       <input id="clave" type="password" autocomplete="current-password" placeholder="Contraseña">
-      <label class="check"><input id="recordar" type="checkbox" checked> Recordar en este dispositivo</label>
-      <button class="btn" id="entrar">Entrar</button>
-      <div class="error hidden" id="errorClave">Contraseña incorrecta.</div>
+      <button class="btn" id="entrar" style="margin-top:12px">Entrar</button>
+      <div class="error hidden" id="errorClave"></div>
     </div>
   </section>
 
@@ -140,8 +154,9 @@ label.titulo { display: block; font-weight: 600; margin: 4px 0 6px; }
     </header>
     <nav class="tabs">
       <button data-tab="practica" class="on">✏️ Práctica</button>
-      <button data-tab="plan">📘 Plan y fichas</button>
+      <button data-tab="plan">📘 Plan</button>
       <button data-tab="progreso">📈 Progreso</button>
+      <button data-tab="usuarios" id="tabUsuarios" class="hidden">👥 Usuarios</button>
     </nav>
 
     <div id="tab-practica">
@@ -229,11 +244,45 @@ label.titulo { display: block; font-weight: 600; margin: 4px 0 6px; }
         <div class="fila"><span>Nuevas por día (máx.)</span><input id="ajNuevas" type="number" min="0" max="50"></div>
         <div class="fila"><span>Nota para aprobar el simulacro (%)</span><input id="ajNota" type="number" min="50" max="100"></div>
         <label class="check"><input id="ajOrden" type="checkbox"> Introducir las preguntas nuevas siguiendo el orden de los módulos (recomendado)</label>
-        <button class="btn secundario" id="borrar">Borrar mi progreso de esta materia</button>
-        <p class="muted">El progreso se guarda solo en este dispositivo.</p>
-        <button class="btn secundario" id="salir">Cerrar sesión (olvidar contraseña)</button>
         <p class="muted" id="version"></p>
       </div>
+      <div class="card">
+        <label class="titulo">Mi cuenta</label>
+        <p id="cuentaNombre"></p>
+        <p class="muted" id="estadoSync">Tu progreso se guarda en tu cuenta.</p>
+        <details><summary>Cambiar mi contraseña</summary>
+          <div class="campo" style="margin-top:8px"><input id="claveActual" type="password" autocomplete="current-password" placeholder="Contraseña actual"></div>
+          <div class="campo"><input id="claveNueva" type="password" autocomplete="new-password" placeholder="Nueva contraseña (mínimo 6)"></div>
+          <button class="btn secundario" id="cambiarClave">Guardar nueva contraseña</button>
+          <p class="muted" id="msgClave"></p>
+        </details>
+        <button class="btn secundario" id="salir" style="margin-top:12px">Cerrar sesión</button>
+      </div>
+    </div>
+
+    <div id="tab-usuarios" class="hidden">
+      <div class="card" id="cardLista">
+        <div class="fila"><label class="titulo" style="margin:0">Usuarios</label>
+          <button class="btn chico" id="nuevoUsuario">➕ Nuevo usuario</button></div>
+        <div id="listaUsuarios" class="muted">Cargando…</div>
+        <button class="btn secundario" id="recargarUsuarios" style="margin-top:10px">Actualizar estadísticas</button>
+      </div>
+      <div class="card hidden" id="cardForm">
+        <h3 id="formTitulo">Nuevo usuario</h3>
+        <div class="campo"><label class="muted">Nombre completo</label><input id="fNombre" type="text"></div>
+        <div class="campo"><label class="muted">Usuario (para ingresar)</label>
+          <input id="fUsuario" type="text" autocapitalize="none" spellcheck="false" placeholder="ej. jperez"></div>
+        <div class="campo"><label class="muted" id="fClaveEtiqueta">Contraseña (mínimo 6)</label>
+          <input id="fClave" type="text" autocomplete="off" spellcheck="false"></div>
+        <div class="campo"><label class="muted">Rol</label>
+          <select id="fRol"><option value="estudiante">Estudiante</option><option value="admin">Administrador (ve todo y gestiona usuarios)</option></select></div>
+        <label class="check"><input id="fActivo" type="checkbox" checked> Cuenta activa (si la desactivas, ya no puede entrar)</label>
+        <label class="titulo">Módulos que puede practicar</label>
+        <div id="fModulos"></div>
+        <div class="error hidden" id="fError"></div>
+        <div class="fila-botones"><button class="btn secundario" id="fCancelar">Cancelar</button><button class="btn" id="fGuardar">Guardar</button></div>
+      </div>
+      <div class="card hidden" id="cardDetalle"></div>
     </div>
   </section>
 </main>
@@ -253,15 +302,33 @@ const guardado = {
   borrar(clave) { try { localStorage.removeItem(clave); } catch {} },
 };
 
-// ---------- descifrado (AES-GCM + PBKDF2, igual que publicar_web.py) ----------
+// ---------- servidor, sesión y contenido cifrado por módulo ----------
 const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
-async function descifrar(paquete, clave) {
-  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(clave), "PBKDF2", false, ["deriveKey"]);
-  const llave = await crypto.subtle.deriveKey(
-    { name: "PBKDF2", salt: b64(paquete.salt), iterations: paquete.iter, hash: "SHA-256" },
-    base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
-  const plano = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(paquete.iv) }, llave, b64(paquete.datos));
+let CONFIG = null, SESION = null, PROG = null, ADMIN = null;
+
+async function api(accion, datos = {}) {
+  if (!CONFIG) CONFIG = await (await fetch("config.json", { cache: "no-cache" })).json();
+  const r = await fetch(CONFIG.servidor, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(Object.assign({ accion }, datos)) });
+  const j = await r.json();
+  if (!j.ok) { const e = new Error(String(j.error).replace(/^SESION: /, "")); e.sesion = String(j.error).startsWith("SESION:"); throw e; }
+  return j;
+}
+async function descifrarModulo(m, llave) {
+  const k = await crypto.subtle.importKey("raw", b64(llave), "AES-GCM", false, ["decrypt"]);
+  const plano = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(m.iv) }, k, b64(m.datos));
   return JSON.parse(new TextDecoder().decode(plano));
+}
+async function cargarContenido(claves) {
+  const paquete = await (await fetch("datos.enc.json", { cache: "no-cache" })).json();
+  DATOS = { generado: paquete.generado, materias: {}, fichas: {}, modulos: {} };
+  for (const m of paquete.modulos) {
+    if (!claves[m.id]) continue;
+    const c = await descifrarModulo(m, claves[m.id]);
+    (DATOS.materias[c.materia] = DATOS.materias[c.materia] || []).push(...c.preguntas);
+    (DATOS.fichas[c.materia] = DATOS.fichas[c.materia] || []).push(...c.fichas);
+    DATOS.modulos[m.id] = c;
+  }
 }
 
 let DATOS = null, materia = null, preguntas = [], fichas = [], progreso = null, porId = {};
@@ -276,33 +343,93 @@ const tipoDe = (q) => q.tipo || "opcion";
 const moduloDe = (q) => q.modulo || nombreCorto(q.fuente);
 const iguales = (a, b) => String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
 
-async function entrar(clave, recordar) {
-  const paquete = await (await fetch("datos.enc.json", { cache: "no-cache" })).json();
-  DATOS = await descifrar(paquete, clave);
-  if (recordar) guardado.escribir("clave", clave); else guardado.borrar("clave");
+const claveProg = () => "prog:" + SESION.perfil.usuario;
+const claveSalida = () => "salida:" + SESION.perfil.usuario;
+
+function elegirProgreso(local, servidor) {
+  if (!local && !servidor) {                       // primera vez: trae el progreso antiguo de este dispositivo
+    const materias = {};
+    Object.keys(localStorage).filter((k) => k.startsWith("progreso:")).forEach((k) => {
+      materias[k.slice(9)] = guardado.leer(k, null); guardado.borrar(k);
+    });
+    return { materias, actualizado: Object.keys(materias).length ? Date.now() : 0 };
+  }
+  if (!local) return servidor;
+  if (!servidor) return local;
+  return (servidor.actualizado || 0) > (local.actualizado || 0) ? servidor : local;
+}
+
+async function abrirApp(r) {                       // r: respuesta de login / yo, o la sesión guardada
+  SESION = { token: r.token, perfil: r.perfil, claves: r.claves || {}, catalogo: r.catalogo || [] };
+  guardado.escribir("sesion", SESION);
+  PROG = elegirProgreso(guardado.leer(claveProg(), null), r.progreso || null);
+  PROG.materias = PROG.materias || {};
+  if (!Object.keys(SESION.claves).length) throw new Error("Aún no tienes módulos asignados. Consulta al administrador.");
+  await cargarContenido(SESION.claves);
   $("candado").classList.add("hidden");
   $("app").classList.remove("hidden");
+  $("tabUsuarios").classList.toggle("hidden", SESION.perfil.rol !== "admin");
+  $("cuentaNombre").innerHTML = `<b>${escapar(SESION.perfil.nombre)}</b> <span class="muted">(${escapar(SESION.perfil.usuario)})</span>`;
   $("version").textContent = `Preguntas actualizadas el ${DATOS.generado}.`;
   const sel = $("materia");
   sel.innerHTML = Object.keys(DATOS.materias).map((m) => `<option>${escapar(m)}</option>`).join("");
   const ultima = guardado.leer("materia", null);
   if (ultima && DATOS.materias[ultima]) sel.value = ultima;
   cambiarMateria();
+  sincronizar();
 }
 
+function errorLogin(msg) { $("errorClave").textContent = msg; $("errorClave").classList.remove("hidden"); }
 $("entrar").onclick = async () => {
   $("errorClave").classList.add("hidden");
-  try { await entrar($("clave").value, $("recordar").checked); }
-  catch { $("errorClave").classList.remove("hidden"); }
+  $("entrar").disabled = true; $("entrar").textContent = "Entrando…";
+  try { await abrirApp(await api("login", { usuario: $("usuario").value, clave: $("clave").value })); $("clave").value = ""; }
+  catch (e) { errorLogin(/fetch|network/i.test(e.message) ? "Sin conexión con el servidor. Revisa tu internet." : e.message); }
+  finally { $("entrar").disabled = false; $("entrar").textContent = "Entrar"; }
 };
 $("clave").addEventListener("keydown", (e) => { if (e.key === "Enter") $("entrar").click(); });
+$("usuario").addEventListener("keydown", (e) => { if (e.key === "Enter") $("clave").focus(); });
+
+// ---------- sincronización con el servidor (sin conexión se guarda y se envía después) ----------
+let temporizadorSync = null, sincronizando = false;
+function programarSync(ms = 4000) { clearTimeout(temporizadorSync); temporizadorSync = setTimeout(sincronizar, ms); }
+function encolar(tipo, x) {
+  const sal = guardado.leer(claveSalida(), { eventos: [], simulacros: [] });
+  sal[tipo].push(x); guardado.escribir(claveSalida(), sal); programarSync();
+}
+async function sincronizar() {
+  if (!SESION || sincronizando) return;
+  sincronizando = true;
+  const sal = guardado.leer(claveSalida(), { eventos: [], simulacros: [] });
+  const ev = sal.eventos.slice(0, 1500), si = sal.simulacros.slice(0, 100);
+  try {
+    await api("sync", { token: SESION.token, eventos: ev, simulacros: si, progreso: PROG });
+    const ahora = guardado.leer(claveSalida(), { eventos: [], simulacros: [] });
+    ahora.eventos.splice(0, ev.length); ahora.simulacros.splice(0, si.length);
+    guardado.escribir(claveSalida(), ahora);
+    $("estadoSync").textContent = `Progreso guardado en tu cuenta · ${new Date().toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" })}`;
+    if (ahora.eventos.length) programarSync(500);
+  } catch (e) {
+    $("estadoSync").textContent = "Sin conexión: tu progreso se enviará cuando vuelvas a tener internet.";
+    if (e.sesion) { alert(e.message); sincronizando = false; return cerrarSesion(false); }
+    programarSync(60000);
+  } finally { sincronizando = false; }
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") sincronizar(); });
+window.addEventListener("online", () => sincronizar());
+
+async function cerrarSesion(enviar = true) {
+  if (enviar) await sincronizar();
+  if (SESION) { guardado.borrar(claveProg()); guardado.borrar(claveSalida()); }
+  guardado.borrar("sesion");
+  location.reload();
+}
 
 // ---------- progreso por materia ----------
-function claveProgreso() { return "progreso:" + materia; }
 function estado(id) { return progreso.q[id] || (progreso.q[id] = { caja: 1, proxima: "", aciertos: 0, fallos: 0 }); }
 const visto = (q) => progreso.q[q.id] && progreso.q[q.id].proxima;
 const cajaDe = (q) => (progreso.q[q.id] ? progreso.q[q.id].caja : 0);
-function guardarProgreso() { guardado.escribir(claveProgreso(), progreso); }
+function guardarProgreso() { PROG.actualizado = Date.now(); guardado.escribir(claveProg(), PROG); programarSync(); }
 
 function cambiarMateria() {
   materia = $("materia").value;
@@ -310,8 +437,8 @@ function cambiarMateria() {
   preguntas = DATOS.materias[materia];
   fichas = (DATOS.fichas && DATOS.fichas[materia]) || [];
   porId = Object.fromEntries(preguntas.map((q) => [q.id, q]));
-  progreso = Object.assign({ q: {}, historial: {}, max: 20, nuevas: 10, nota: 80, orden: true, simulacros: [] },
-    guardado.leer(claveProgreso(), {}));
+  progreso = PROG.materias[materia] = Object.assign({ q: {}, historial: {}, max: 20, nuevas: 10, nota: 80, orden: true, simulacros: [] },
+    PROG.materias[materia] || {});
   $("ajMax").value = progreso.max; $("ajNuevas").value = progreso.nuevas;
   $("ajNota").value = progreso.nota; $("ajOrden").checked = progreso.orden;
   armarFiltros();
@@ -346,6 +473,9 @@ function registrar(id, acerto, primerIntento) {
     const d = progreso.historial[hoyISO()] || (progreso.historial[hoyISO()] = { respondidas: 0, correctas: 0 });
     d.respondidas++; d.correctas += acerto ? 1 : 0;
   }
+  const q = porId[id];
+  encolar("eventos", { fh: new Date().toISOString(), materia, modulo: moduloDe(q), tema: q.tema || "", tipo: tipoDe(q), id,
+    ok: acerto, modo: simu ? "simulacro" : primerIntento ? modo : "reintento" });
   guardarProgreso();
 }
 
@@ -622,6 +752,7 @@ function terminarSimulacro() {
   const res = simu.resultados, ok = res.filter((x) => x.acerto).length;
   const nota = Math.round((100 * ok) / Math.max(1, res.length)), aprobado = nota >= progreso.nota;
   progreso.simulacros.push({ fecha: hoyISO(), nota, n: res.length });
+  encolar("simulacros", { fh: new Date().toISOString(), materia, nota, n: res.length, aprobado });
   guardarProgreso();
   mostrar("fin");
   $("extra").classList.add("hidden");
@@ -650,7 +781,8 @@ function terminarSimulacro() {
 // ---------- pestañas ----------
 function irATab(tab) {
   document.querySelectorAll(".tabs button").forEach((x) => x.classList.toggle("on", x.dataset.tab === tab));
-  ["practica", "plan", "progreso"].forEach((t) => $("tab-" + t).classList.toggle("hidden", t !== tab));
+  ["practica", "plan", "progreso", "usuarios"].forEach((t) => $("tab-" + t).classList.toggle("hidden", t !== tab));
+  if (tab === "usuarios" && !ADMIN) cargarUsuarios();
   if (tab === "progreso") pintarProgreso();
   if (tab === "plan") pintarPlan();
   window.scrollTo({ top: 0 });
@@ -726,16 +858,155 @@ $("ajMax").onchange = () => { progreso.max = Math.max(5, +$("ajMax").value || 20
 $("ajNuevas").onchange = () => { progreso.nuevas = Math.max(0, +$("ajNuevas").value || 0); guardarProgreso(); };
 $("ajNota").onchange = () => { progreso.nota = Math.min(100, Math.max(50, +$("ajNota").value || 80)); guardarProgreso(); };
 $("ajOrden").onchange = () => { progreso.orden = $("ajOrden").checked; guardarProgreso(); };
-$("borrar").onclick = () => {
-  if (!confirm(`¿Borrar todo tu progreso de "${materia}" en este dispositivo?`)) return;
-  guardado.borrar(claveProgreso()); cambiarMateria();
+$("salir").onclick = () => { if (confirm("¿Cerrar sesión en este dispositivo?")) cerrarSesion(true); };
+$("cambiarClave").onclick = async () => {
+  try {
+    const r = await api("cambiar_clave", { token: SESION.token, actual: $("claveActual").value, nueva: $("claveNueva").value });
+    $("msgClave").textContent = r.mensaje; $("claveActual").value = ""; $("claveNueva").value = "";
+  } catch (e) { $("msgClave").textContent = "⚠️ " + e.message; }
 };
-$("salir").onclick = () => { guardado.borrar("clave"); location.reload(); };
+
+// ---------- administración de usuarios ----------
+const fechaHora = (x) => { if (!x) return "nunca"; const d = new Date(x); return isNaN(d) ? String(x) : d.toLocaleString("es-PE", { dateStyle: "short", timeStyle: "short" }); };
+const pct = (a, b) => (b ? Math.round((100 * a) / b) : 0);
+
+function idsPermitidos(u) { return u.rol === "admin" ? ADMIN.catalogo.map((m) => m.id) : u.modulos; }
+function estadisticas(u) {
+  const materias = (u.progreso && u.progreso.materias) || {};
+  const r = { resp: 0, corr: 0, r7: 0, c7: 0, dias: new Set(), vistas: 0, dom: 0, total: 0, porModulo: [], simulacros: [], actividad: {} };
+  const desde7 = sumarDias(-6);
+  Object.entries(materias).forEach(([mat, pm]) => {
+    Object.entries((pm && pm.historial) || {}).forEach(([dia, h]) => {
+      r.resp += h.respondidas; r.corr += h.correctas; r.dias.add(dia);
+      r.actividad[dia] = r.actividad[dia] || [0, 0]; r.actividad[dia][0] += h.respondidas; r.actividad[dia][1] += h.correctas;
+      if (dia >= desde7) { r.r7 += h.respondidas; r.c7 += h.correctas; }
+    });
+    ((pm && pm.simulacros) || []).forEach((x) => r.simulacros.push(Object.assign({ materia: mat }, x)));
+  });
+  idsPermitidos(u).forEach((id) => {
+    const mod = DATOS.modulos[id];
+    if (!mod) return;
+    const q = ((materias[mod.materia] || {}).q) || {};
+    const vistas = mod.preguntas.filter((p) => q[p.id] && q[p.id].proxima).length;
+    const dom = mod.preguntas.filter((p) => q[p.id] && q[p.id].caja >= 4).length;
+    r.vistas += vistas; r.dom += dom; r.total += mod.preguntas.length;
+    r.porModulo.push({ nombre: `${mod.materia} · ${mod.modulo}`, n: mod.preguntas.length, vistas, dom });
+  });
+  r.porModulo.sort((a, b) => a.nombre.localeCompare(b.nombre, "es", { numeric: true }));
+  return r;
+}
+
+async function cargarUsuarios() {
+  $("listaUsuarios").textContent = "Cargando…";
+  try { ADMIN = await api("admin_usuarios", { token: SESION.token }); pintarUsuarios(); }
+  catch (e) { $("listaUsuarios").textContent = "⚠️ " + e.message; }
+}
+function pintarUsuarios() {
+  const lista = ADMIN.usuarios.slice().sort((a, b) => (b.activo - a.activo) || String(a.nombre).localeCompare(b.nombre, "es"));
+  $("listaUsuarios").innerHTML = lista.length ? lista.map((u) => {
+    const e = estadisticas(u);
+    return `<button class="usuario-fila" data-u="${escapar(u.usuario)}">
+      <b>${escapar(u.nombre)}</b> <span class="muted">${escapar(u.usuario)}</span>
+      ${u.rol === "admin" ? '<span class="badge">admin</span>' : ""}${u.activo ? "" : '<span class="badge off">inactivo</span>'}
+      <div class="muted">Última actividad: ${fechaHora(u.ultima)} · ${u.rol === "admin" ? "todos los módulos" : u.modulos.length + " módulo(s)"}</div>
+      <div class="muted">${e.resp} respondidas · ${pct(e.corr, e.resp)}% aciertos · ${pct(e.dom, e.total)}% dominado</div>
+    </button>`;
+  }).join("") : "Aún no hay usuarios.";
+  document.querySelectorAll(".usuario-fila").forEach((b) => (b.onclick = () => verUsuario(b.dataset.u)));
+}
+
+function verUsuario(usuario) {
+  const u = ADMIN.usuarios.find((x) => x.usuario === usuario), e = estadisticas(u);
+  const dias = Object.keys(e.actividad).sort().reverse().slice(0, 14);
+  $("cardDetalle").innerHTML = `
+    <h3>${escapar(u.nombre)} <span class="muted">(${escapar(u.usuario)})</span></h3>
+    <div class="muted">Creado: ${fechaHora(u.creado)} · Última actividad: ${fechaHora(u.ultima)}</div>
+    <div class="metricas" style="margin-top:10px">
+      <div><strong>${e.resp}</strong><span class="muted">Respondidas</span></div>
+      <div><strong>${pct(e.corr, e.resp)}%</strong><span class="muted">Aciertos</span></div>
+      <div><strong>${pct(e.dom, e.total)}%</strong><span class="muted">Dominado</span></div>
+    </div>
+    <p class="muted">Últimos 7 días: ${e.r7} respondidas (${pct(e.c7, e.r7)}% aciertos) · Días con práctica: ${e.dias.size} · Vistas: ${e.vistas} de ${e.total}</p>
+    <label class="titulo">Dominio por módulo</label>
+    ${e.porModulo.map((m) => `<div class="tema-fila" style="cursor:default"><span>${escapar(m.nombre)}</span>
+      <div class="barra"><div style="width:${pct(m.dom, m.n)}%"></div></div><span class="pct">${pct(m.dom, m.n)}%</span></div>`).join("") || '<p class="muted">Sin módulos asignados.</p>'}
+    <label class="titulo" style="margin-top:12px">Simulacros</label>
+    ${e.simulacros.length ? e.simulacros.slice(-10).reverse().map((x) => `<p>${x.fecha.split("-").reverse().join("/")} · ${escapar(x.materia)} ·
+      <b>${x.nota}%</b> en ${x.n} preguntas</p>`).join("") : '<p class="muted">Aún no hace simulacros.</p>'}
+    <label class="titulo" style="margin-top:12px">Actividad reciente</label>
+    ${dias.length ? dias.map((d) => `<p>${d.split("-").reverse().join("/")} · ${e.actividad[d][0]} respondidas · ${pct(e.actividad[d][1], e.actividad[d][0])}% aciertos</p>`).join("")
+      : '<p class="muted">Aún no ha practicado.</p>'}
+    <div class="fila-botones"><button class="btn secundario" id="dVolver">Volver</button><button class="btn" id="dEditar">Editar usuario</button></div>`;
+  ["cardLista", "cardForm"].forEach((c) => $(c).classList.add("hidden"));
+  $("cardDetalle").classList.remove("hidden");
+  $("dVolver").onclick = volverLista;
+  $("dEditar").onclick = () => abrirFormulario(u);
+  window.scrollTo({ top: 0 });
+}
+function volverLista() {
+  ["cardForm", "cardDetalle"].forEach((c) => $(c).classList.add("hidden"));
+  $("cardLista").classList.remove("hidden");
+}
+
+function abrirFormulario(u) {
+  const nuevo = !u;
+  $("formTitulo").textContent = nuevo ? "Nuevo usuario" : `Editar: ${u.nombre}`;
+  $("fNombre").value = nuevo ? "" : u.nombre;
+  $("fUsuario").value = nuevo ? "" : u.usuario; $("fUsuario").disabled = !nuevo;
+  $("fClave").value = "";
+  $("fClaveEtiqueta").textContent = nuevo ? "Contraseña (mínimo 6)" : "Nueva contraseña (déjala vacía para no cambiarla)";
+  $("fRol").value = nuevo ? "estudiante" : u.rol;
+  $("fActivo").checked = nuevo ? true : u.activo;
+  const elegidos = new Set(nuevo ? [] : u.modulos);
+  const porMateria = {};
+  ADMIN.catalogo.forEach((m) => (porMateria[m.materia] = porMateria[m.materia] || []).push(m));
+  $("fModulos").innerHTML = Object.entries(porMateria).map(([mat, mods], k) => `<div class="grupo-mods">
+      <label><input type="checkbox" class="todos" data-g="${k}"><b>${escapar(mat)}</b> <span class="muted">(todos)</span></label>
+      ${mods.sort((a, b) => a.modulo.localeCompare(b.modulo, "es", { numeric: true })).map((m) => `<label><input type="checkbox" class="mod" data-g="${k}" value="${m.id}" ${elegidos.has(m.id) ? "checked" : ""}>
+        ${escapar(m.modulo)} <span class="muted">(${m.n})</span></label>`).join("")}</div>`).join("");
+  const marcarTodos = () => document.querySelectorAll("#fModulos .todos").forEach((t) => {
+    t.checked = [...document.querySelectorAll(`#fModulos .mod[data-g="${t.dataset.g}"]`)].every((h) => h.checked);
+  });
+  document.querySelectorAll("#fModulos .todos").forEach((t) => (t.onchange = () => {
+    document.querySelectorAll(`#fModulos .mod[data-g="${t.dataset.g}"]`).forEach((h) => (h.checked = t.checked));
+  }));
+  document.querySelectorAll("#fModulos .mod").forEach((h) => (h.onchange = marcarTodos));
+  marcarTodos();
+  $("fError").classList.add("hidden");
+  ["cardLista", "cardDetalle"].forEach((c) => $(c).classList.add("hidden"));
+  $("cardForm").classList.remove("hidden");
+  window.scrollTo({ top: 0 });
+}
+$("nuevoUsuario").onclick = () => abrirFormulario(null);
+$("recargarUsuarios").onclick = cargarUsuarios;
+$("fCancelar").onclick = volverLista;
+$("fGuardar").onclick = async () => {
+  const datos = { usuario: $("fUsuario").value.trim().toLowerCase(), nombre: $("fNombre").value.trim(), clave: $("fClave").value,
+    rol: $("fRol").value, activo: $("fActivo").checked,
+    modulos: [...document.querySelectorAll("#fModulos .mod:checked")].map((h) => h.value) };
+  if (!datos.nombre) { $("fError").textContent = "Escribe el nombre."; return $("fError").classList.remove("hidden"); }
+  $("fGuardar").disabled = true;
+  try {
+    const r = await api("admin_guardar", { token: SESION.token, datos });
+    await cargarUsuarios(); volverLista();
+    alert(r.mensaje + (datos.clave ? `\n\nUsuario: ${datos.usuario}\nContraseña: ${datos.clave}\n\nEntrégale estos datos a la persona.` : ""));
+  } catch (e) { $("fError").textContent = e.message; $("fError").classList.remove("hidden"); }
+  finally { $("fGuardar").disabled = false; }
+};
 
 // ---------- inicio ----------
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
-const recordada = guardado.leer("clave", null);
-if (recordada) entrar(recordada, true).catch(() => guardado.borrar("clave"));
+(async () => {
+  const guardada = guardado.leer("sesion", null);
+  if (!guardada) return;
+  try {
+    await abrirApp(Object.assign(await api("yo", { token: guardada.token }), { token: guardada.token }));
+  } catch (e) {
+    if (e.sesion) { guardado.borrar("sesion"); return errorLogin(e.message); }
+    try { await abrirApp(guardada); }                 // sin conexión: abre con lo último descargado
+    catch (e2) { errorLogin(e2.message); }
+  }
+})();
 </script>
 </body>
 </html>
