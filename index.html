@@ -37,6 +37,8 @@ button, select, input { font: inherit; color: inherit; }
 .btn.secundario { background: var(--accent-soft); color: var(--accent); }
 .btn.peligro { background: var(--bad); color: #fff; }
 .btn.peligro-suave { background: var(--bad-soft); color: var(--bad); width: 100%; }
+.eliminados { margin-top: 12px; }
+.eliminados summary { cursor: pointer; color: var(--muted, inherit); padding: 6px 0; }
 .zona-peligro { margin-top: 12px; padding: 12px; border-radius: var(--radius); background: var(--bad-soft); }
 .btn.chico { display: inline-block; width: auto; padding: 7px 12px; font-size: .88rem; margin: 0; }
 .btn:disabled { opacity: .45; cursor: default; }
@@ -915,14 +917,25 @@ function pintarUsuarios() {
       <div class="muted">${e.resp} respondidas · ${pct(e.corr, e.resp)}% aciertos · ${pct(e.dom, e.total)}% dominado</div>
     </button>`;
   }).join("") : "Aún no hay usuarios.";
-  document.querySelectorAll(".usuario-fila").forEach((b) => (b.onclick = () => verUsuario(b.dataset.u)));
+  const elim = (ADMIN.eliminados || []).slice().sort((a, b) => String(b.eliminado).localeCompare(String(a.eliminado)));
+  if (elim.length) $("listaUsuarios").innerHTML += `<details class="eliminados"><summary>Usuarios eliminados (${elim.length})</summary>
+    ${elim.map((u) => { const e = estadisticas(u); return `<button class="usuario-fila" data-e="${escapar(u.usuario)}">
+      <b>${escapar(u.nombre)}</b> <span class="muted">${escapar(u.usuario)}</span><span class="badge off">eliminado</span>
+      <div class="muted">Eliminado: ${fechaHora(u.eliminado)} · Última actividad: ${fechaHora(u.ultima)}</div>
+      <div class="muted">${e.resp} respondidas · ${pct(e.corr, e.resp)}% aciertos · ${pct(e.dom, e.total)}% dominado</div>
+    </button>`; }).join("")}</details>`;
+  document.querySelectorAll(".usuario-fila[data-u]").forEach((b) => (b.onclick = () => verUsuario(b.dataset.u)));
+  document.querySelectorAll(".usuario-fila[data-e]").forEach((b) => (b.onclick = () => verUsuario(b.dataset.e, true)));
 }
 
-function verUsuario(usuario) {
-  const u = ADMIN.usuarios.find((x) => x.usuario === usuario), e = estadisticas(u);
+function verUsuario(usuario, eliminado = false) {
+  const u = (eliminado ? ADMIN.eliminados : ADMIN.usuarios).find((x) => x.usuario === usuario), e = estadisticas(u);
+  const propio = u.usuario === SESION.perfil.usuario;
+  const estado = eliminado ? `<span class="badge off">eliminado el ${fechaHora(u.eliminado)}</span>`
+    : u.activo ? '<span class="badge">activo</span>' : '<span class="badge off">inactivo · no puede ingresar</span>';
   const dias = Object.keys(e.actividad).sort().reverse().slice(0, 14);
   $("cardDetalle").innerHTML = `
-    <h3>${escapar(u.nombre)} <span class="muted">(${escapar(u.usuario)})</span></h3>
+    <h3>${escapar(u.nombre)} <span class="muted">(${escapar(u.usuario)})</span> ${estado}</h3>
     <div class="muted">Creado: ${fechaHora(u.creado)} · Última actividad: ${fechaHora(u.ultima)}</div>
     <div class="metricas" style="margin-top:10px">
       <div><strong>${e.resp}</strong><span class="muted">Respondidas</span></div>
@@ -939,28 +952,42 @@ function verUsuario(usuario) {
     <label class="titulo" style="margin-top:12px">Actividad reciente</label>
     ${dias.length ? dias.map((d) => `<p>${d.split("-").reverse().join("/")} · ${e.actividad[d][0]} respondidas · ${pct(e.actividad[d][1], e.actividad[d][0])}% aciertos</p>`).join("")
       : '<p class="muted">Aún no ha practicado.</p>'}
-    <div class="fila-botones"><button class="btn secundario" id="dVolver">Volver</button><button class="btn" id="dEditar">Editar usuario</button></div>
-    ${u.usuario === SESION.perfil.usuario ? "" : `<button class="btn peligro-suave" id="dEliminar" style="margin-top:12px">🗑️ Eliminar usuario</button>
+    <div class="error hidden" id="dError"></div>
+    <div class="fila-botones"><button class="btn secundario" id="dVolver">Volver</button>${eliminado ? "" : '<button class="btn" id="dEditar">Editar usuario</button>'}</div>
+    ${eliminado ? '<p class="muted" style="margin-top:12px">Cuenta eliminada: no puede ingresar. Su progreso, respuestas y simulacros se conservan.</p>'
+      : propio ? "" : `<button class="btn ${u.activo ? "secundario" : ""}" id="dActivar" style="margin-top:12px;width:100%">
+        ${u.activo ? "⏸️ Desactivar acceso" : "▶️ Reactivar acceso"}</button>
+    <p class="muted">${u.activo ? "Al desactivar ya no podrá ingresar, pero conserva todo su avance y puedes reactivarlo cuando quieras."
+      : "Al reactivar podrá ingresar con su misma contraseña y continuar donde se quedó."}</p>
+    <button class="btn peligro-suave" id="dEliminar" style="margin-top:4px">🗑️ Eliminar usuario</button>
     <div class="zona-peligro hidden" id="dConfirmar">
-      <p><b>¿Eliminar a ${escapar(u.nombre)}?</b> Ya no podrá ingresar y se borra su progreso. No se puede deshacer.
-      Si solo terminó su entrenamiento y quieres conservar sus estadísticas, mejor usa <b>Editar usuario</b> y desmarca "Cuenta activa".</p>
-      <label class="check"><input id="dHistorial" type="checkbox"> Borrar también su historial de respuestas y simulacros de la Hoja de Google</label>
-      <div class="error hidden" id="dError"></div>
+      <p><b>¿Eliminar a ${escapar(u.nombre)}?</b> Ya no podrá ingresar y su cuenta no se puede recuperar.
+      Su progreso, respuestas y simulacros <b>se conservan</b> y los verás en "Usuarios eliminados".
+      El nombre de usuario <b>${escapar(u.usuario)}</b> no se podrá volver a usar.</p>
+      <p class="muted">Si solo terminó su entrenamiento, normalmente basta con <b>Desactivar acceso</b>.</p>
       <div class="fila-botones"><button class="btn secundario" id="dNo">Cancelar</button><button class="btn peligro" id="dSi">Sí, eliminar</button></div>
     </div>`}`;
   ["cardLista", "cardForm"].forEach((c) => $(c).classList.add("hidden"));
   $("cardDetalle").classList.remove("hidden");
   $("dVolver").onclick = volverLista;
-  $("dEditar").onclick = () => abrirFormulario(u);
+  if ($("dEditar")) $("dEditar").onclick = () => abrirFormulario(u);
+  const fallo = (e, boton) => { $("dError").textContent = e.message; $("dError").classList.remove("hidden"); boton.disabled = false; };
+  if ($("dActivar")) $("dActivar").onclick = async () => {
+    $("dActivar").disabled = true;
+    try {
+      const r = await api("admin_activar", { token: SESION.token, usuario: u.usuario, activo: !u.activo });
+      await cargarUsuarios(); verUsuario(u.usuario); alert(r.mensaje);
+    } catch (e) { fallo(e, $("dActivar")); }
+  };
   if ($("dEliminar")) {
     $("dEliminar").onclick = () => { $("dEliminar").classList.add("hidden"); $("dConfirmar").classList.remove("hidden"); };
     $("dNo").onclick = () => { $("dConfirmar").classList.add("hidden"); $("dEliminar").classList.remove("hidden"); };
     $("dSi").onclick = async () => {
       $("dSi").disabled = true;
       try {
-        const r = await api("admin_eliminar", { token: SESION.token, usuario: u.usuario, borrar_historial: $("dHistorial").checked });
+        const r = await api("admin_eliminar", { token: SESION.token, usuario: u.usuario });
         await cargarUsuarios(); volverLista(); alert(r.mensaje);
-      } catch (e) { $("dError").textContent = e.message; $("dError").classList.remove("hidden"); $("dSi").disabled = false; }
+      } catch (e) { fallo(e, $("dSi")); }
     };
   }
   window.scrollTo({ top: 0 });
