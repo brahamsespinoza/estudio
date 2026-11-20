@@ -35,6 +35,9 @@ button, select, input { font: inherit; color: inherit; }
   background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; margin-top: 4px; }
 @media (prefers-color-scheme: dark) { .btn { color: #0f1513; } }
 .btn.secundario { background: var(--accent-soft); color: var(--accent); }
+.btn.peligro { background: var(--bad); color: #fff; }
+.btn.peligro-suave { background: var(--bad-soft); color: var(--bad); width: 100%; }
+.zona-peligro { margin-top: 12px; padding: 12px; border-radius: var(--radius); background: var(--bad-soft); }
 .btn.chico { display: inline-block; width: auto; padding: 7px 12px; font-size: .88rem; margin: 0; }
 .btn:disabled { opacity: .45; cursor: default; }
 header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
@@ -936,11 +939,30 @@ function verUsuario(usuario) {
     <label class="titulo" style="margin-top:12px">Actividad reciente</label>
     ${dias.length ? dias.map((d) => `<p>${d.split("-").reverse().join("/")} · ${e.actividad[d][0]} respondidas · ${pct(e.actividad[d][1], e.actividad[d][0])}% aciertos</p>`).join("")
       : '<p class="muted">Aún no ha practicado.</p>'}
-    <div class="fila-botones"><button class="btn secundario" id="dVolver">Volver</button><button class="btn" id="dEditar">Editar usuario</button></div>`;
+    <div class="fila-botones"><button class="btn secundario" id="dVolver">Volver</button><button class="btn" id="dEditar">Editar usuario</button></div>
+    ${u.usuario === SESION.perfil.usuario ? "" : `<button class="btn peligro-suave" id="dEliminar" style="margin-top:12px">🗑️ Eliminar usuario</button>
+    <div class="zona-peligro hidden" id="dConfirmar">
+      <p><b>¿Eliminar a ${escapar(u.nombre)}?</b> Ya no podrá ingresar y se borra su progreso. No se puede deshacer.
+      Si solo terminó su entrenamiento y quieres conservar sus estadísticas, mejor usa <b>Editar usuario</b> y desmarca "Cuenta activa".</p>
+      <label class="check"><input id="dHistorial" type="checkbox"> Borrar también su historial de respuestas y simulacros de la Hoja de Google</label>
+      <div class="error hidden" id="dError"></div>
+      <div class="fila-botones"><button class="btn secundario" id="dNo">Cancelar</button><button class="btn peligro" id="dSi">Sí, eliminar</button></div>
+    </div>`}`;
   ["cardLista", "cardForm"].forEach((c) => $(c).classList.add("hidden"));
   $("cardDetalle").classList.remove("hidden");
   $("dVolver").onclick = volverLista;
   $("dEditar").onclick = () => abrirFormulario(u);
+  if ($("dEliminar")) {
+    $("dEliminar").onclick = () => { $("dEliminar").classList.add("hidden"); $("dConfirmar").classList.remove("hidden"); };
+    $("dNo").onclick = () => { $("dConfirmar").classList.add("hidden"); $("dEliminar").classList.remove("hidden"); };
+    $("dSi").onclick = async () => {
+      $("dSi").disabled = true;
+      try {
+        const r = await api("admin_eliminar", { token: SESION.token, usuario: u.usuario, borrar_historial: $("dHistorial").checked });
+        await cargarUsuarios(); volverLista(); alert(r.mensaje);
+      } catch (e) { $("dError").textContent = e.message; $("dError").classList.remove("hidden"); $("dSi").disabled = false; }
+    };
+  }
   window.scrollTo({ top: 0 });
 }
 function volverLista() {
