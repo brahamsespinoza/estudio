@@ -44,6 +44,7 @@ button, select, input { font: inherit; color: inherit; }
 .btn:disabled { opacity: .45; cursor: default; }
 header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 header select { max-width: 55%; }
+.pendientes { margin: -4px 0 12px; padding: 8px 12px; border-radius: 10px; background: var(--warn-soft); color: var(--warn); font-size: .9em; }
 select, input[type=password], input[type=number] { width: 100%; padding: 11px 12px; border-radius: 10px;
   border: 1px solid var(--line); background: var(--card); }
 .tabs, .seg { display: flex; gap: 4px; background: var(--accent-soft); padding: 4px; border-radius: 12px; margin-bottom: 14px; }
@@ -157,6 +158,7 @@ input[type=text] { width: 100%; padding: 11px 12px; border-radius: 10px; border:
       <h1>🧠 Estudio</h1>
       <select id="materia" aria-label="Materia"></select>
     </header>
+    <div class="pendientes hidden" id="pendientes"></div>
     <nav class="tabs">
       <button data-tab="practica" class="on">✏️ Práctica</button>
       <button data-tab="plan">📘 Plan</button>
@@ -400,32 +402,57 @@ let temporizadorSync = null, sincronizando = false;
 function programarSync(ms = 4000) { clearTimeout(temporizadorSync); temporizadorSync = setTimeout(sincronizar, ms); }
 function encolar(tipo, x) {
   const sal = guardado.leer(claveSalida(), { eventos: [], simulacros: [] });
-  sal[tipo].push(x); guardado.escribir(claveSalida(), sal); programarSync();
+  sal[tipo].push(x); guardado.escribir(claveSalida(), sal); mostrarPendientes(); programarSync();
 }
+/** Respuestas y simulacros guardados en este celular que aún no llegan al servidor. */
+function pendientes() {
+  if (!SESION) return 0;
+  const sal = guardado.leer(claveSalida(), { eventos: [], simulacros: [] });
+  return sal.eventos.length + sal.simulacros.length;
+}
+function mostrarPendientes() {
+  const n = pendientes();
+  $("pendientes").textContent = `📶 ${n} ${n === 1 ? "respuesta guardada" : "respuestas guardadas"} en este celular, por enviar. Se enviarán solas cuando tengas internet.`;
+  $("pendientes").classList.toggle("hidden", !n);
+}
+/** Devuelve true si todo lo pendiente llegó al servidor. */
 async function sincronizar() {
-  if (!SESION || sincronizando) return;
+  if (!SESION || sincronizando) return false;
   sincronizando = true;
   const sal = guardado.leer(claveSalida(), { eventos: [], simulacros: [] });
   const ev = sal.eventos.slice(0, 1500), si = sal.simulacros.slice(0, 100);
   try {
-    await api("sync", { token: SESION.token, eventos: ev, simulacros: si, progreso: PROG });
+    const r = await api("sync", { token: SESION.token, eventos: ev, simulacros: si, progreso: PROG });
+    if (r.token) { SESION.token = r.token; guardado.escribir("sesion", SESION); }   // sesión renovada 30 días más
     const ahora = guardado.leer(claveSalida(), { eventos: [], simulacros: [] });
     ahora.eventos.splice(0, ev.length); ahora.simulacros.splice(0, si.length);
     guardado.escribir(claveSalida(), ahora);
     $("estadoSync").textContent = `Progreso guardado en tu cuenta · ${new Date().toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" })}`;
-    if (ahora.eventos.length) programarSync(500);
+    if (ahora.eventos.length || ahora.simulacros.length) programarSync(500);
+    return !(ahora.eventos.length || ahora.simulacros.length);
   } catch (e) {
     $("estadoSync").textContent = "Sin conexión: tu progreso se enviará cuando vuelvas a tener internet.";
-    if (e.sesion) { alert(e.message); sincronizando = false; return cerrarSesion(false); }
+    if (e.sesion) {                                  // vencida o desactivada: lo pendiente se queda en el celular
+      const n = pendientes();
+      alert(e.message + (n ? `\n\nTus ${n} respuestas sin enviar quedan guardadas en este celular y se enviarán cuando vuelvas a ingresar.` : ""));
+      sincronizando = false; cerrarSesion(false, true); return false;
+    }
     programarSync(60000);
-  } finally { sincronizando = false; }
+    return false;
+  } finally { sincronizando = false; mostrarPendientes(); }
 }
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") sincronizar(); });
 window.addEventListener("online", () => sincronizar());
 
-async function cerrarSesion(enviar = true) {
-  if (enviar) await sincronizar();
-  if (SESION) { guardado.borrar(claveProg()); guardado.borrar(claveSalida()); }
+/** conservar = true: cierra la sesión pero deja en el celular el progreso y lo pendiente (para enviarlo al volver a ingresar). */
+async function cerrarSesion(enviar = true, conservar = false) {
+  if (enviar) {
+    while (sincronizando) await new Promise((r) => setTimeout(r, 200));
+    await sincronizar();
+    const n = pendientes();
+    if (n) return alert(`Tienes ${n} ${n === 1 ? "respuesta" : "respuestas"} sin enviar.\n\nConéctate a internet y vuelve a intentar cerrar sesión, así no se pierde tu práctica.`);
+  }
+  if (SESION && !conservar) { guardado.borrar(claveProg()); guardado.borrar(claveSalida()); }
   guardado.borrar("sesion");
   location.reload();
 }
@@ -1049,7 +1076,7 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
   const guardada = guardado.leer("sesion", null);
   if (!guardada) return;
   try {
-    await abrirApp(Object.assign(await api("yo", { token: guardada.token }), { token: guardada.token }));
+    await abrirApp(Object.assign({ token: guardada.token }, await api("yo", { token: guardada.token })));   // usa el token renovado
   } catch (e) {
     if (e.sesion) { guardado.borrar("sesion"); return errorLogin(e.message); }
     try { await abrirApp(guardada); }                 // sin conexión: abre con lo último descargado
